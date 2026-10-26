@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Mi historial{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card__header">
+    <div>
+      <h2 class="card__title">Mi historial</h2>
+      <p class="card__subtitle">Reuniones que has generado.</p>
+    </div>
+  </div>
+
+  <div class="card__body">
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ url_for('web.historial') }}" class="btn {{ 'btn-primary' if not doc_type_filter else 'btn-secondary' }}">Todos</a>
+        <a href="{{ url_for('web.historial', tipo='prioritization') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'prioritization' else 'btn-secondary' }}">Priorización</a>
+        <a href="{{ url_for('web.historial', tipo='planning') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'planning' else 'btn-secondary' }}">Planificación</a>
+        <a href="{{ url_for('web.historial', tipo='scheduling') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'scheduling' else 'btn-secondary' }}">Programación</a>
+        <a href="{{ url_for('web.historial', tipo='post') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'post' else 'btn-secondary' }}">Post Mantención</a>
+        <a href="{{ url_for('web.historial', tipo='process_5s') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'process_5s' else 'btn-secondary' }}">Conciliación SEP4</a>
+      </div>
+    </div>
+
+    {% if reuniones %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Título</th>
+              <th>Fecha reunión</th>
+              <th>Área</th>
+              <th>Generado</th>
+              <th style="width:120px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in reuniones %}
+              <tr>
+                <td>{{ doc_labels.get(r.doc_type, r.doc_type) }}</td>
+                <td>{{ r.titulo }}</td>
+                <td>{{ r.fecha }}</td>
+                <td>{{ r.area }}</td>
+                <td>{{ r.created_at.strftime('%d/%m/%Y %H:%M') if r.created_at else '' }}</td>
+                <td>
+                  {% if r.pdf_path %}
+                    <a class="btn btn-secondary" href="{{ url_for('web.historial_descargar', reunion_id=r.id) }}">Descargar</a>
+                  {% else %}
+                    <span class="badge">Sin PDF</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="badge" style="display:block; padding:14px;">
+        {% if doc_type_filter %}
+          No tienes reuniones generadas de este tipo todavía.
+        {% else %}
+          Aún no has generado ninguna reunión.
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="actions" style="margin-top:16px;">
+      <a class="btn btn-secondary" href="{{ url_for('web.home') }}">Volver a Inicio</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

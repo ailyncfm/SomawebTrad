@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Compromisos vencidos{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card__header">
+    <div>
+      <h2 class="card__title">Compromisos vencidos</h2>
+      <p class="card__subtitle">Compromisos cuya fecha ya pasó y siguen sin cerrarse.</p>
+    </div>
+  </div>
+
+  <div class="card__body">
+    <div class="actions" style="margin-bottom:20px;">
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_panel') }}">Ver reuniones</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_seguimiento') }}">Seguimiento</a>
+      <a class="btn btn-primary" href="{{ url_for('web.admin_vencidos') }}">Vencidos</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_usuarios') }}">Gestionar usuarios</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.home') }}">Volver a Inicio</a>
+    </div>
+
+    {% if vencidos %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Días vencido</th>
+              <th>Área</th>
+              <th>Acción</th>
+              <th>Responsable</th>
+              <th>Fecha compromiso</th>
+              <th>Estado</th>
+              <th>Reunión origen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for v in vencidos %}
+              <tr style="{{ 'background:#fff5f5;' if v.dias_vencido and v.dias_vencido > 14 else '' }}">
+                <td style="font-weight:900; color:#b00020;">{{ v.dias_vencido if v.dias_vencido is not none else '—' }}</td>
+                <td>{{ v.compromiso.area or '—' }}</td>
+                <td>{{ v.compromiso.accion }}</td>
+                <td>{{ v.compromiso.responsable }}</td>
+                <td>{{ v.compromiso.fecha_compromiso }}</td>
+                <td>{{ v.compromiso.estado or 'Sin estado' }}</td>
+                <td>
+                  {% if v.reunion %}
+                    {{ doc_labels.get(v.reunion.doc_type, v.reunion.doc_type) }} — {{ v.reunion.fecha }}
+                    {% if v.reunion.pdf_path %}
+                      <a href="{{ url_for('web.admin_descargar', reunion_id=v.reunion.id) }}" style="margin-left:6px;">Ver PDF</a>
+                    {% endif %}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="badge" style="display:block; padding:14px;">No hay compromisos vencidos. 🎉</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

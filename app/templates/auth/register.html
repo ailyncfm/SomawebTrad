@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Crear cuenta{% endblock %}
+{% block content %}
+<div class="card" style="max-width:420px; margin:24px auto;">
+  <div class="card__body">
+    <h2 class="card__title" style="text-align:center;">Crear cuenta</h2>
+    <p class="card__subtitle" style="text-align:center;">Usa tu correo corporativo para registrarte.</p>
+
+    {% if error %}
+      <div class="badge" style="background:#fff5f5; border-color:#b00020; color:#b00020; display:block; margin:10px 0;">
+        {{ error }}
+      </div>
+    {% endif %}
+
+    <form class="form" method="post" action="{{ url_for('auth.register_submit') }}">
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" name="nombre" value="{{ nombre or '' }}" required autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Correo corporativo</label>
+        <input type="email" name="email" value="{{ email or '' }}" required autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" name="password" required minlength="10">
+        <p style="font-size:12px; color:var(--muted); margin-top:4px;">Mínimo 10 caracteres. Puedes usar letras, números y símbolos.</p>
+      </div>
+      <div class="field">
+        <label>Repite la contraseña</label>
+        <input type="password" name="password2" required minlength="10">
+      </div>
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn btn-primary" type="submit" style="width:100%;">Crear cuenta</button>
+      </div>
+    </form>
+
+    <p style="text-align:center; font-size:13px; color:var(--muted); margin-top:14px;">
+      ¿Ya tienes cuenta? <a href="{{ url_for('auth.login_form') }}">Inicia sesión</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

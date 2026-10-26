@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}Seguimiento{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card__header">
+    <div>
+      <h2 class="card__title">Seguimiento</h2>
+      <p class="card__subtitle">{{ "Vista divisional — Resumen DET" if not doc_type_filter else "Seguimiento de " + doc_labels.get(doc_type_filter, doc_type_filter) }}</p>
+    </div>
+  </div>
+
+  <div class="card__body">
+    <div class="actions" style="margin-bottom:16px;">
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_panel') }}">Ver reuniones</a>
+      <a class="btn btn-primary" href="{{ url_for('web.admin_seguimiento') }}">Seguimiento</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_usuarios') }}">Gestionar usuarios</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.home') }}">Volver a Inicio</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_organizacion') }}">Gerencias y áreas</a>
+    </div>
+
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+      <a href="{{ url_for('web.admin_seguimiento', area=area_filter) }}" class="btn {{ 'btn-primary' if not doc_type_filter else 'btn-secondary' }}">Resumen DET</a>
+      <a href="{{ url_for('web.admin_seguimiento', tipo='prioritization', area=area_filter) }}" class="btn {{ 'btn-primary' if doc_type_filter == 'prioritization' else 'btn-secondary' }}">Priorización</a>
+      <a href="{{ url_for('web.admin_seguimiento', tipo='planning', area=area_filter) }}" class="btn {{ 'btn-primary' if doc_type_filter == 'planning' else 'btn-secondary' }}">Planificación</a>
+      <a href="{{ url_for('web.admin_seguimiento', tipo='scheduling', area=area_filter) }}" class="btn {{ 'btn-primary' if doc_type_filter == 'scheduling' else 'btn-secondary' }}">Programación</a>
+      <a href="{{ url_for('web.admin_seguimiento', tipo='post', area=area_filter) }}" class="btn {{ 'btn-primary' if doc_type_filter == 'post' else 'btn-secondary' }}">Post Mantención</a>
+    </div>
+
+    <div class="field" style="max-width:360px; margin-bottom:20px;">
+      <label>Filtrar por área</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="areaFilterInput" list="areaFilterList" placeholder="Escribe o selecciona un área..." value="{{ area_filter_label or '' }}" autocomplete="off" style="flex:1;">
+        {% if area_filter %}
+          <a class="btn btn-secondary" href="{{ url_for('web.admin_seguimiento', tipo=doc_type_filter) }}">Limpiar</a>
+        {% endif %}
+      </div>
+      <datalist id="areaFilterList">
+        {% for a in all_areas %}
+          <option value="{{ a.label }}"></option>
+        {% endfor %}
+      </datalist>
+    </div>
+
+    <script>
+      (function(){
+        const AREA_LABEL_TO_VALUE = {{ all_areas | tojson }}.reduce((acc, a) => { acc[a.label] = a.value; return acc; }, {});
+        const BASE_URL = "{{ url_for('web.admin_seguimiento', tipo=doc_type_filter) }}";
+        const input = document.getElementById("areaFilterInput");
+
+        function navigateIfMatch(){
+          const label = input.value.trim();
+          if(!label){
+            window.location.href = BASE_URL;
+            return;
+          }
+          const value = AREA_LABEL_TO_VALUE[label];
+          if(value !== undefined){
+            const sep = BASE_URL.includes("?") ? "&" : "?";
+            window.location.href = BASE_URL + sep + "area=" + encodeURIComponent(value);
+          }
+        }
+
+        input.addEventListener("change", navigateIfMatch);
+      })();
+    </script>
+
+    <div class="steps-guide" style="margin-bottom:20px;">
+      <div class="steps-guide__item">
+        <div><div class="steps-guide__title" style="font-size:22px; color:var(--primary);">{{ total_reuniones }}</div><div class="steps-guide__desc">Reuniones generadas</div></div>
+      </div>
+      <a href="{{ url_for('web.admin_vencidos') }}" class="steps-guide__item" style="text-decoration:none; color:inherit; {{ 'background:#fff5f5;' if compromisos_vencidos else '' }}">
+        <div><div class="steps-guide__title" style="font-size:22px; color:{{ '#b00020' if compromisos_vencidos else 'var(--primary)' }};">{{ compromisos_vencidos }}</div><div class="steps-guide__desc">Compromisos vencidos    (+)</div></div>
+      </a>
+      <div class="steps-guide__item">
+        <div><div class="steps-guide__title" style="font-size:22px; color:var(--primary);">{{ total_compromisos }}</div><div class="steps-guide__desc">Compromisos cargados</div></div>
+      </div>
+      <div class="steps-guide__item">
+        <div><div class="steps-guide__title" style="font-size:22px; color:var(--primary);">{{ asistencia_promedio if asistencia_promedio is not none else "—" }}{{ "%" if asistencia_promedio is not none else "" }}</div><div class="steps-guide__desc">Asistencia promedio</div></div>
+      </div>
+      <div class="steps-guide__item">
+        <div><div class="steps-guide__title" style="font-size:22px; color:var(--primary);">{{ nota_promedio if nota_promedio is not none else "—" }}</div><div class="steps-guide__desc">Nota promedio</div></div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+      <div>
+        <div class="section-bar">Asistencia por área</div>
+        <div style="position:relative; height:200px; margin-top:10px;"><canvas id="chartAsistencia"></canvas></div>
+      </div>
+      <div>
+        <div class="section-bar">Compromisos por estado</div>
+        <div style="position:relative; height:200px; margin-top:10px;"><canvas id="chartEstados"></canvas></div>
+      </div>
+    </div>
+
+
+
+    {% if not doc_type_filter %}
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+        <div>
+          <div class="section-bar">Reuniones por tipo</div>
+          <div style="position:relative; height:180px; margin-top:10px;"><canvas id="chartTipos"></canvas></div>
+        </div>
+        <div>
+          <div class="section-bar">Áreas con menor participación</div>
+          <div class="table-wrap" style="margin-top:10px;">
+            <table>
+              <thead><tr><th>Área</th><th>% Asistencia</th></tr></thead>
+              <tbody>
+                {% for a in areas_menos_participan %}
+                  <tr><td>{{ a.area }}</td><td>{{ a.pct }}%</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    <div class="field" style="margin-bottom:20px;">
+      <label>Rango de semanas para los gráficos de nota semanal</label>
+      <form method="get" action="{{ url_for('web.admin_seguimiento') }}" style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; margin-top:6px;">
+        <input type="hidden" name="tipo" value="{{ doc_type_filter }}">
+        <input type="hidden" name="area" value="{{ area_filter }}">
+        <div class="field" style="margin:0;">
+          <label>Desde semana</label>
+          <select name="semana_inicio">
+            <option value="">(inicio)</option>
+            {% for s in semanas_disponibles %}
+              <option value="{{ s }}" {{ 'selected' if s == semana_inicio else '' }}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field" style="margin:0;">
+          <label>Hasta semana</label>
+          <select name="semana_fin">
+            <option value="">(fin)</option>
+            {% for s in semanas_disponibles %}
+              <option value="{{ s }}" {{ 'selected' if s == semana_fin else '' }}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button class="btn btn-secondary" type="submit">Aplicar rango</button>
+      </form>
+    </div>
+          
+      <div style="margin-bottom:24px;">
+        <div class="section-bar">Histórico de nota — Promedio divisional por tipo de reunión (semanal)</div>
+        <div style="position:relative; height:260px; margin-top:10px;"><canvas id="chartNotaDivisionalTipo"></canvas></div>
+      </div>
+    {% else %}
+      <div style="margin-bottom:24px;">
+        <div class="section-bar">Histórico de la nota</div>
+        <div style="position:relative; height:200px; margin-top:10px;"><canvas id="chartNota"></canvas></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+        <div>
+          <div class="section-bar">Histórico de nota — Semanal divisional ({{ doc_labels.get(doc_type_filter, doc_type_filter) }}, todas las áreas)</div>
+          <div style="position:relative; height:200px; margin-top:10px;"><canvas id="chartNotaSemanalTipo"></canvas></div>
+        </div>
+        {% if area_filter %}
+        <div>
+          <div class="section-bar">Histórico de nota — Semanal {{ area_filter_label }}</div>
+          <div style="position:relative; height:200px; margin-top:10px;"><canvas id="chartNotaArea"></canvas></div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <div class="section-bar">Cumplimiento de compromisos por área</div>
+        <div style="position:relative; height:200px; margin-top:10px;"><canvas id="chartCumplimiento"></canvas></div>
+      </div>
+    {% endif %}
+
+
+    <div class="section-bar">Reuniones sin compromisos</div>
+    {% if reuniones_sin_compromisos %}
+      <div class="table-wrap" style="margin:10px 0 20px;">
+        <table>
+          <thead><tr><th>Tipo</th><th>Título</th><th>Fecha</th><th>Generado por</th></tr></thead>
+          <tbody>
+            {% for r in reuniones_sin_compromisos %}
+              <tr>
+                <td>{{ doc_labels.get(r.doc_type, r.doc_type) }}</td>
+                <td>{{ r.titulo }}</td>
+                <td>{{ r.fecha }}</td>
+                <td>{{ r.usuario.nombre if r.usuario else '—' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="badge" style="display:block; padding:14px; margin:10px 0 20px;">Todas las reuniones tienen al menos un compromiso.</div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const asistenciaData = {{ asistencia_por_area | tojson }};
+new Chart(document.getElementById('chartAsistencia'), {
+  type: 'bar',
+  data: {
+    labels: asistenciaData.map(a => a.area),
+    datasets: [
+      { label: 'Esperados', data: asistenciaData.map(a => a.total), backgroundColor: '#e5e7eb' },
+      { label: 'Asistieron', data: asistenciaData.map(a => a.asistieron), backgroundColor: '#F97316' },
+    ],
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
+});
+
+const estadosData = {{ counts_por_estado | tojson }};
+new Chart(document.getElementById('chartEstados'), {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(estadosData),
+    datasets: [{ data: Object.values(estadosData), backgroundColor: ['#eda100','#2a78d6','#008300','#e34948','#898781','#6250d6'] }],
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
+});
+
+{% if not doc_type_filter %}
+const tiposData = {{ reuniones_por_tipo | tojson }};
+new Chart(document.getElementById('chartTipos'), {
+  type: 'bar',
+  data: { labels: Object.keys(tiposData), datasets: [{ data: Object.values(tiposData), backgroundColor: '#F97316' }] },
+  options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
+});
+{% else %}
+const notaData = {{ nota_historica | tojson }};
+new Chart(document.getElementById('chartNota'), {
+  type: 'line',
+  data: {
+    labels: notaData.map(n => n.fecha),
+    datasets: [{ data: notaData.map(n => n.nota), borderColor: '#F97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.3 }],
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 7 } } },
+});
+
+const cumplimientoData = {{ cumplimiento_por_area | tojson }};
+new Chart(document.getElementById('chartCumplimiento'), {
+  type: 'bar',
+  data: {
+    labels: cumplimientoData.map(c => c.area),
+    datasets: [{ data: cumplimientoData.map(c => c.pct), backgroundColor: cumplimientoData.map(c => c.pct >= 70 ? '#008300' : c.pct >= 40 ? '#eda100' : '#e34948') }],
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100 } } },
+});
+{% endif %}
+
+{% if not doc_type_filter %}
+const notaDivTipo = {{ nota_divisional_por_tipo | tojson }};
+const coloresTipo = { 'PRIO': '#2a78d6', 'PLAN': '#F97316', 'PROG': '#008300', 'PMT': '#6250d6', 'Promedio general': '#111827' };
+new Chart(document.getElementById('chartNotaDivisionalTipo'), {
+  type: 'line',
+  data: {
+    labels: notaDivTipo.labels,
+    datasets: notaDivTipo.series.map(s => ({
+      label: s.label,
+      data: s.data,
+      borderColor: coloresTipo[s.label] || '#999',
+      backgroundColor: coloresTipo[s.label] || '#999',
+      borderWidth: s.label === 'Promedio general' ? 3 : 2,
+      borderDash: s.label === 'Promedio general' ? [6,4] : [],
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      tension: 0.25,
+      spanGaps: true,
+    })),
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom' } },
+    scales: { y: { min: 1, max: 7 } },
+  },
+});
+{% else %}
+const notaSemanalTipo = {{ nota_semanal_tipo | tojson }};
+new Chart(document.getElementById('chartNotaSemanalTipo'), {
+  type: 'line',
+  data: {
+    labels: notaSemanalTipo.labels,
+    datasets: [{ label: 'Nota promedio semanal', data: notaSemanalTipo.data, borderColor: '#2a78d6', backgroundColor: 'rgba(42,120,214,0.1)', fill: true, pointRadius: 4, tension: 0.3 }],
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 1, max: 7 } } },
+});
+
+{% if area_filter %}
+const notaSemanalArea = {{ nota_semanal_area | tojson }};
+new Chart(document.getElementById('chartNotaArea'), {
+  type: 'line',
+  data: {
+    labels: notaSemanalArea.labels,
+    datasets: [{ label: 'Nota — {{ area_filter_label }}', data: notaSemanalArea.data, borderColor: '#F97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, pointRadius: 4, tension: 0.3 }],
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 1, max: 7 } } },
+});
+{% endif %}
+{% endif %}
+</script>
+{% endblock %}

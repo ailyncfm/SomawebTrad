@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+{# Si routes.py no envía "forms", armamos una lista por defecto #}
+{% set _forms = forms|default([]) %}
+{% if not _forms %}
+  {% set _forms = [
+    {"title":"Priorización",  "subtitle":"Formulario SOMA — Priorización",    "href": url_for('web.prioritization_form')},
+    {"title":"Planificación",   "subtitle":"Formulario SOMA — Planificación",   "href": url_for('web.planning_form')},
+    {"title":"Programación",    "subtitle":"Formulario SOMA — Programación",    "href": url_for('web.scheduling_form')},
+    {"title":"Post Mantención", "subtitle":"Formulario SOMA — Post Mantención", "href": url_for('web.post_maintenance_form')},
+    {"title":"Conciliación SEP-4", "subtitle":"Formulario en desarrollo", "href": url_for('web.conciliacion_sep4_form')}
+  ] %}
+{% endif %}
+
+<div class="home-hero">
+  <h1 class="home-title">Registro de Reuniones - CdR</h1>
+</div>
+
+<div class="steps-guide">
+  <div class="steps-guide__item">
+    <span class="step-num">1</span>
+    <div>
+      <div class="steps-guide__title">Selecciona el formulario</div>
+      <div class="steps-guide__desc">Elige el tipo de reunión desde las tarjetas de abajo.</div>
+    </div>
+  </div>
+  <div class="steps-guide__item">
+    <span class="step-num">2</span>
+    <div>
+      <div class="steps-guide__title">Completa los datos</div>
+      <div class="steps-guide__desc">Observadores, evaluación, checklist de seguridad, feedback y compromisos.</div>
+    </div>
+  </div>
+  <div class="steps-guide__item">
+    <span class="step-num">3</span>
+    <div>
+      <div class="steps-guide__title">Genera el PDF</div>
+      <div class="steps-guide__desc">Descárgalo y, si quieres, envía los compromisos por correo automáticamente.</div>
+    </div>
+  </div>
+</div>
+
+<div class="home-grid-heading">Formularios</div>
+
+<div class="home-grid">
+  {% for f in _forms %}
+    <a href="{{ f.href }}" class="card home-card home-card--link">
+      <div class="card__body">
+        <div>
+          <h3 class="home-card__title">{{ f.title }}</h3>
+          <p class="home-card__subtitle">{{ f.subtitle }}</p>
+        </div>
+      </div>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}

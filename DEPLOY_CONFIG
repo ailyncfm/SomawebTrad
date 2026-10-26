@@ -1,0 +1,11 @@
+# ============================================================
+# DEPLOY_CONFIG (ejemplo)
+# ------------------------------------------------------------
+# Copia este archivo a DEPLOY_CONFIG y edita solo SITE_IP.
+# ============================================================
+
+# IP del servidor (ej: 192.168.1.50)
+SITE_IP="127.0.0.0"
+
+# Nombre del zip del proyecto (normalmente no cambia)
+PROJECT_ZIP="somaweb_project.zip"

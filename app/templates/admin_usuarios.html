@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Gestión de usuarios{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card__header">
+    <div>
+      <h2 class="card__title">Gestión de usuarios</h2>
+      <p class="card__subtitle">Activa, desactiva o cambia el rol de cada cuenta.</p>
+    </div>
+  </div>
+
+  <div class="card__body">
+    <div class="actions" style="margin-bottom:20px;">
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_panel') }}">Ver reuniones</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_seguimiento') }}">Seguimiento</a>
+      <a class="btn btn-primary" href="{{ url_for('web.admin_usuarios') }}">Gestionar usuarios</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.home') }}">Volver a Inicio</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_organizacion') }}">Gerencias y áreas</a>
+    </div>
+
+    <form method="get" action="{{ url_for('web.admin_usuarios') }}" style="max-width:360px; margin-bottom:16px;">
+    <div class="field">
+      <label>Buscar usuario</label>
+      <input type="text" name="q" value="{{ busqueda or '' }}" placeholder="Nombre o correo" autocomplete="off">
+    </div>
+  </form>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Creado</th>
+            <th style="width:260px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in usuarios %}
+            <tr>
+              <td>{{ u.nombre }}</td>
+              <td>{{ u.email }}</td>
+              <td>
+                <span class="badge {{ 'badge--admin' if u.is_admin else '' }}">
+                  {{ "Administrador" if u.is_admin else "Usuario" }}
+                </span>
+              </td>
+              <td>
+                <span class="badge {{ '' if u.is_active_account else 'badge--inactive' }}">
+                  {{ "Activa" if u.is_active_account else "Deshabilitada" }}
+                </span>
+              </td>
+              <td>{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '' }}</td>
+              <td>
+<td>
+                {% if u.id != current_user.id %}
+                  <form method="post" action="{{ url_for('web.admin_toggle_active', user_id=u.id) }}" style="display:inline-block;">
+                    <button class="btn btn-secondary" type="submit">
+                      {{ "Deshabilitar" if u.is_active_account else "Habilitar" }}
+                    </button>
+                  </form>
+                  <form method="post" action="{{ url_for('web.admin_toggle_role', user_id=u.id) }}" style="display:inline-block;">
+                    <button class="btn btn-secondary" type="submit">
+                      {{ "Quitar admin" if u.is_admin else "Hacer admin" }}
+                    </button>
+                  </form>
+                  {% if u.id not in reuniones_por_usuario %}
+                    <form method="post" action="{{ url_for('web.admin_eliminar_usuario', user_id=u.id) }}" style="display:inline-block;" onsubmit="return confirm('¿Eliminar definitivamente esta cuenta? Esta acción no se puede deshacer.');">
+                      <button class="btn-trash" type="submit" title="Eliminar cuenta" aria-label="Eliminar cuenta" style="vertical-align:middle;">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                    </form>
+                  {% endif %}
+                {% else %}
+                  <span style="font-size:12px; color:var(--muted);">Tu cuenta</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+  </div>
+</div>
+{% endblock %}

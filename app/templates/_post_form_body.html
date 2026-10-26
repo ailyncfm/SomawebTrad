@@ -1,0 +1,286 @@
+<!-- app/templates/_post_form_body.html -->
+{% set form_action = url_for('web.post_maintenance_generate_pdf') %}
+
+<style>
+  /* mismo CSS que scheduling/planning */
+  .page-title{font-size:20px;margin:0 0 12px 0}
+  .grid{display:flex;flex-direction:column;gap:12px}
+  .card{border:1px solid #dcdcdc;border-radius:8px;padding:12px;background:#fff}
+  .card h2{font-size:16px;margin:0 0 10px 0}
+  .row{display:grid;grid-template-columns:140px 1fr 140px 1fr;gap:8px;align-items:center}
+  .row2{display:grid;grid-template-columns:140px 1fr 140px 1fr;gap:8px;align-items:center}
+  .row3{display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center}
+  label{font-size:13px;color:#222}
+  input[type="text"], input[type="email"], textarea{
+    width:100%; padding:8px; border:1px solid #cfcfcf; border-radius:6px; font-size:13px;
+  }
+  input[readonly]{background:#f7f7f7}
+  textarea{min-height:90px;resize:vertical}
+  .wide{grid-column: 1 / -1}
+  .section{border:1px solid #e5e5e5;border-radius:8px;margin-top:10px;overflow:hidden}
+  .section-title{background:#f57c00; color:#000; font-weight:700; padding:8px 10px; font-size:13px;}
+  .qrow{display:grid;grid-template-columns: 38% 62%; border-top:1px solid #e5e5e5}
+  .qtext{padding:10px;font-size:12.5px;background:#fafafa}
+  .qopts{display:grid;grid-template-columns: 1fr 1fr 1fr; gap:0; border-left:1px solid #e5e5e5}
+  .radio{display:flex;gap:8px;align-items:flex-start;padding:10px;border-left:1px solid #e5e5e5;font-size:12.5px}
+  .radio:first-child{border-left:none}
+  .radio input{margin-top:2px}
+
+  table{width:100%;border-collapse:collapse}
+  th, td{border:1px solid #d0d0d0;padding:8px;font-size:12.5px;vertical-align:top}
+  th{background:#4b4b4b;color:#fff}
+
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+  .actions-left{justify-content:flex-start}
+
+  .btn{
+    padding:10px 14px;border:1px solid #9ca3af;border-radius:10px;background:#e5e7eb;
+    color:#111827 !important;cursor:pointer;font-weight:700;
+  }
+  .btn:hover{filter:brightness(0.96)}
+  .btn-primary{background:#f57c00 !important;border-color:#c75e00 !important;color:#111827 !important;}
+</style>
+
+<h1 class="page-title">Post Mantenimiento SOMA</h1>
+
+<form method="post" action="{{ form_action }}">
+  <div class="grid">
+
+    <div class="card">
+      <h2>Datos de la reunión</h2>
+      <div class="row">
+        <label>Fecha</label>
+        <input type="text" name="fecha" placeholder="DD/MM/AAAA" value="{{ data['fecha'] if data is defined and data else '' }}">
+
+        <label>Hora</label>
+        <input type="text" name="hora" placeholder="HH:MM" value="{{ data['hora'] if data is defined and data else '' }}">
+      </div>
+
+      <div class="row3" style="margin-top:10px;">
+        <label>Área</label>
+        <input class="wide" type="text" name="area" value="{{ data['area'] if data is defined and data else '' }}">
+      </div>
+    </div>
+
+    <!-- Observadores -->
+    <div class="card">
+      <h2>Observador 1</h2>
+      <div class="row2">
+        <label>Id</label><input type="text" name="obs1_id" value="{{ (data['observers'][0]['id'] if data is defined and data and data.get('observers') else '') }}">
+        <label>Nombre</label><input type="text" name="obs1_nombre" value="{{ (data['observers'][0]['nombre'] if data is defined and data and data.get('observers') else '') }}">
+        <label>Gerencia</label><input type="text" name="obs1_gerencia" value="{{ (data['observers'][0]['gerencia'] if data is defined and data and data.get('observers') else '') }}">
+        <label>Superintendencia</label><input type="text" name="obs1_superintendencia" value="{{ (data['observers'][0]['superintendencia'] if data is defined and data and data.get('observers') else '') }}">
+        <label>SAP</label><input type="text" name="obs1_sap" value="{{ (data['observers'][0]['sap'] if data is defined and data and data.get('observers') else '') }}">
+        <label>E-mail</label><input type="email" name="obs1_email" value="{{ (data['observers'][0]['email'] if data is defined and data and data.get('observers') else '') }}">
+        <label>Denominación posición</label><input type="text" name="obs1_posicion" value="{{ (data['observers'][0]['posicion'] if data is defined and data and data.get('observers') else '') }}">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Observador 2</h2>
+      <div class="row2">
+        <label>Id</label><input type="text" name="obs2_id" value="{{ (data['observers'][1]['id'] if data is defined and data and data.get('observers') else '') }}">
+        <label>Nombre</label><input type="text" name="obs2_nombre" value="{{ (data['observers'][1]['nombre'] if data is defined and data and data.get('observers') else '') }}">
+        <label>Gerencia</label><input type="text" name="obs2_gerencia" value="{{ (data['observers'][1]['gerencia'] if data is defined and data and data.get('observers') else '') }}">
+        <label>Superintendencia</label><input type="text" name="obs2_superintendencia" value="{{ (data['observers'][1]['superintendencia'] if data is defined and data and data.get('observers') else '') }}">
+        <label>SAP</label><input type="text" name="obs2_sap" value="{{ (data['observers'][1]['sap'] if data is defined and data and data.get('observers') else '') }}">
+        <label>E-mail</label><input type="email" name="obs2_email" value="{{ (data['observers'][1]['email'] if data is defined and data and data.get('observers') else '') }}">
+        <label>Denominación posición</label><input type="text" name="obs2_posicion" value="{{ (data['observers'][1]['posicion'] if data is defined and data and data.get('observers') else '') }}">
+      </div>
+    </div>
+
+    <!-- Evaluación -->
+    <div class="card">
+      <h2>Evaluación (1-2-3)</h2>
+
+      {% if schema is defined and schema %}
+        {% for sec in schema %}
+          {% set si = loop.index0 %}
+          <div class="section">
+            <div class="section-title">{{ sec["name"] }}</div>
+
+            {% for it in sec["items"] %}
+              {% set ii = loop.index0 %}
+              <div class="qrow">
+                <div class="qtext">{{ it["question"] }}</div>
+                <div class="qopts">
+                  {% for opt in it["options"] %}
+                    {% set val = loop.index %}
+                    <label class="radio">
+                      <input type="radio" name="s{{ si }}_i{{ ii }}" value="{{ val }}" {% if val == 1 %}checked required{% endif %}>
+                      <span>{{ opt }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div style="color:#b00020;font-weight:600;">
+          No se recibió el schema desde el backend (variable <code>schema</code>).
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Feedback -->
+    <div class="card">
+      <h2>Feedback</h2>
+      <div class="row2">
+        <label>Fortalezas de la reunión</label>
+        <textarea name="fortalezas">{{ (data['feedback']['fortalezas'] if data is defined and data and data.get('feedback') else '') }}</textarea>
+
+        <label>Oportunidades de la reunión</label>
+        <textarea name="oportunidades">{{ (data['feedback']['oportunidades'] if data is defined and data and data.get('feedback') else '') }}</textarea>
+
+        <label>Plan</label>
+        <textarea class="wide" name="plan">{{ (data['feedback']['plan'] if data is defined and data and data.get('feedback') else '') }}</textarea>
+      </div>
+    </div>
+
+    <!-- Compromisos -->
+    <div class="card">
+      <h2>Compromisos</h2>
+      <table id="tblCommitments">
+        <thead>
+          <tr>
+            <th>Acción propuesta</th>
+            <th>Responsable</th>
+            <th>Fecha compromiso</th>
+            <th>Estado de la acción</th>
+            <th>Evidencia de cierre</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" name="c_accion[]" /></td>
+            <td><input type="text" name="c_responsable[]" /></td>
+            <td><input type="text" name="c_fecha[]" placeholder="DD/MM/AAAA" /></td>
+            <td><input type="text" name="c_estado[]" /></td>
+            <td><input type="text" name="c_evidencia[]" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="actions actions-left" style="margin-top:12px;">
+        <button type="button" class="btn" onclick="addCommitmentRow()">Agregar</button>
+        <button type="button" class="btn" onclick="removeCommitmentRow()">Quitar</button>
+      </div>
+    </div>
+
+    <!-- Participantes -->
+    <div class="card">
+      <h2>Participantes</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Área</th>
+            <th>Responsable</th>
+            <th>Asistió? (Sí)</th>
+            <th>Asistió? (No)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if participant_areas is defined and participant_areas %}
+            {% for a in participant_areas %}
+              {% set pi = loop.index0 %}
+              <tr>
+                <td>{{ a }}</td>
+                <td><input type="text" name="p_responsable_{{ pi }}" /></td>
+                <td style="text-align:center;"><input type="radio" name="p_asistio_{{ pi }}" value="si" /></td>
+                <td style="text-align:center;"><input type="radio" name="p_asistio_{{ pi }}" value="no" /></td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="4" style="color:#b00020;font-weight:600;">No llegaron participant_areas desde backend.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Resultado -->
+    <div class="card">
+      <h2>Resultado (Puntaje y Nota)</h2>
+      <div class="row">
+        <label>Puntaje obtenido</label><input id="score_obt" type="text" readonly value="0.0">
+        <label>Puntaje máximo</label><input id="score_max" type="text" readonly value="0.0">
+      </div>
+      <div class="row3" style="margin-top:10px;">
+        <label>Nota</label><input id="score_nota" class="wide" type="text" readonly value="1.0">
+      </div>
+      <div style="font-size:12px;color:#555;margin-top:6px;">
+        Regla: 60% del puntaje máximo corresponde a nota 4.0. Mínimo por pregunta = 1 punto.
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Generar PDF</button>
+    </div>
+
+  </div>
+</form>
+
+<script>
+  function calcGrade1to5(points, pmin, pmax, exigencia){
+    const nmin = 1.0, naprob = 4.0, nmax = 5.0;
+    const ex = (typeof exigencia === "number") ? exigencia : 0.60;
+    if(pmax <= pmin) return nmin;
+
+    const preq = ex * pmax;
+    let grade;
+
+    if(points <= preq){
+      const denom = (preq - pmin);
+      grade = (denom <= 0) ? naprob : (nmin + ((points - pmin)/denom) * (naprob - nmin));
+    } else {
+      const denom = (pmax - preq);
+      grade = (denom <= 0) ? naprob : (naprob + ((points - preq)/denom) * (nmax - naprob));
+    }
+
+    grade = Math.max(nmin, Math.min(nmax, grade));
+    return Math.round(grade * 10) / 10;
+  }
+
+  function recomputeScore(){
+    let pointsObt = 0.0, pointsMin = 0.0, pointsMax = 0.0;
+
+    document.querySelectorAll(".qopts").forEach(q => {
+      const radios = q.querySelectorAll('input[type="radio"]');
+      if(!radios.length) return;
+      pointsMin += 1;
+      pointsMax += radios.length;
+      const chk = q.querySelector('input[type="radio"]:checked');
+      const v = chk ? parseInt(chk.value || "1", 10) : 1;
+      pointsObt += (isNaN(v) ? 1 : v);
+    });
+
+    const nota = calcGrade1to5(pointsObt, pointsMin, pointsMax, 0.60);
+    document.getElementById("score_obt").value = pointsObt.toFixed(1);
+    document.getElementById("score_max").value = pointsMax.toFixed(1);
+    document.getElementById("score_nota").value = nota.toFixed(1);
+  }
+
+  function addCommitmentRow(){
+    const tb = document.querySelector("#tblCommitments tbody");
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="text" name="c_accion[]" /></td>
+      <td><input type="text" name="c_responsable[]" /></td>
+      <td><input type="text" name="c_fecha[]" placeholder="DD/MM/AAAA" /></td>
+      <td><input type="text" name="c_estado[]" /></td>
+      <td><input type="text" name="c_evidencia[]" /></td>
+    `;
+    tb.appendChild(tr);
+  }
+
+  function removeCommitmentRow(){
+    const tb = document.querySelector("#tblCommitments tbody");
+    if(tb.rows.length > 1) tb.deleteRow(tb.rows.length - 1);
+  }
+
+  document.addEventListener("change", (ev) => {
+    if(ev.target && ev.target.matches('input[type="radio"]')) recomputeScore();
+  });
+  window.addEventListener("load", recomputeScore);
+</script>
+

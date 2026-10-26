@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Generación de PDFs SOMA</h1>
+  <p>Partimos por <b>Planning</b>. Luego clonamos el mismo patrón para Scheduling y Post Mantenimiento.</p>
+
+  <div class="card">
+    <h2>Planning</h2>
+    <p>Formulario web → genera PDF (descarga + guarda en storage).</p>
+    <a class="btn" href="{{ url_for('web.planning_form') }}">Abrir Planning</a>
+  </div>
+{% endblock %}

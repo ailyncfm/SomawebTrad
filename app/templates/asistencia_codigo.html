@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registro de asistencia — SOMA Web</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  <main class="container" style="max-width:420px; padding-top:40px;">
+    <div class="card">
+      <div class="card__body" style="text-align:center;">
+        <h2 class="card__title">Registro de asistencia</h2>
+        <p class="card__subtitle">Ingresa el código que el organizador compartió al cierre de la reunión.</p>
+
+        {% if error %}
+          <div class="badge" style="background:#fff5f5; border-color:#b00020; color:#b00020; display:block; margin:10px 0;">
+            {{ error }}
+          </div>
+        {% endif %}
+
+        <form class="form" method="post" action="{{ url_for('web.asistencia_codigo_submit') }}">
+          <div class="field">
+            <label>Código de la reunión</label>
+            <input type="text" name="codigo" inputmode="numeric" maxlength="6" placeholder="Ej: 482913" required autofocus style="text-align:center; font-size:22px; letter-spacing:4px; font-weight:900;">
+          </div>
+          <div class="actions" style="margin-top:12px;">
+            <button class="btn btn-primary" type="submit" style="width:100%;">Continuar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

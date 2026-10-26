@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Gerencias y áreas{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card__header">
+    <div>
+      <h2 class="card__title">Gerencias, superintendencias y áreas</h2>
+      <p class="card__subtitle">Estructura usada en los formularios y el seguimiento.</p>
+    </div>
+  </div>
+
+  <div class="card__body">
+    <div class="actions" style="margin-bottom:20px;">
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_panel') }}">Ver reuniones</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_seguimiento') }}">Seguimiento</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_usuarios') }}">Gestionar usuarios</a>
+      <a class="btn btn-primary" href="{{ url_for('web.admin_organizacion') }}">Gerencias y áreas</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.home') }}">Volver a Inicio</a>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card__body">
+        <div class="section-bar">Agregar nueva gerencia</div>
+        <form method="post" action="{{ url_for('web.admin_crear_gerencia') }}" class="grid-3" style="margin-top:10px;">
+          <div class="field"><label>Código</label><input type="text" name="codigo" placeholder="Ej: GMIN" required></div>
+          <div class="field"><label>Nombre</label><input type="text" name="nombre" placeholder="Ej: Gerencia de Minas" required></div>
+          <div class="field" style="display:flex; align-items:flex-end;"><button class="btn btn-primary" type="submit">Agregar gerencia</button></div>
+        </form>
+      </div>
+    </div>
+
+    {% for g in gerencias %}
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card__body">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">{{ g.nombre_completo }}</h3>
+            <form method="post" action="{{ url_for('web.admin_eliminar_gerencia', gerencia_id=g.id) }}" onsubmit="return confirm('¿Eliminar esta gerencia y todo lo que contiene (superintendencias y áreas)? No se puede deshacer.');">
+              <button class="btn-trash" type="submit" title="Eliminar gerencia">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </form>
+          </div>
+
+          <form method="post" action="{{ url_for('web.admin_crear_superintendencia') }}" class="grid-3" style="margin:12px 0;">
+            <input type="hidden" name="gerencia_id" value="{{ g.id }}">
+            <div class="field"><label>Código superintendencia</label><input type="text" name="codigo" placeholder="Ej: SMN" required></div>
+            <div class="field"><label>Nombre superintendencia</label><input type="text" name="nombre" placeholder="Ej: Suptcia. Mina Norte" required></div>
+            <div class="field" style="display:flex; align-items:flex-end;"><button class="btn btn-secondary" type="submit">+ Agregar superintendencia</button></div>
+          </form>
+
+          {% for s in g.superintendencias %}
+            <div style="border-top:0.5px solid var(--border); padding-top:10px; margin-top:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b style="font-size:14px;">{{ s.nombre_completo }}</b>
+                <form method="post" action="{{ url_for('web.admin_eliminar_superintendencia', superintendencia_id=s.id) }}" onsubmit="return confirm('¿Eliminar esta superintendencia y sus áreas?');">
+                  <button class="btn-trash" type="submit" title="Eliminar superintendencia" style="transform:scale(0.8);">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </form>
+              </div>
+
+              <div class="table-wrap" style="margin-top:8px;">
+                <table>
+                  <thead><tr><th>Área</th><th>Código PDF</th><th style="width:50px;"></th></tr></thead>
+                  <tbody>
+                    {% for a in s.areas %}
+                      <tr>
+                        <td>{{ a.nombre }}</td>
+                        <td>{{ a.codigo_pdf or '—' }}</td>
+                        <td>
+                          <form method="post" action="{{ url_for('web.admin_eliminar_area', area_id=a.id) }}" onsubmit="return confirm('¿Eliminar esta área?');">
+                            <button class="btn-trash" type="submit" title="Eliminar área" style="transform:scale(0.75);">
+                              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                          </form>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <form method="post" action="{{ url_for('web.admin_crear_area') }}" class="grid-3" style="margin-top:8px;">
+                <input type="hidden" name="superintendencia_id" value="{{ s.id }}">
+                <div class="field"><label>Nombre área</label><input type="text" name="nombre" placeholder="Ej: U. Nueva Área" required></div>
+                <div class="field"><label>Código para PDF</label><input type="text" name="codigo_pdf" placeholder="Ej: NA" maxlength="6"></div>
+                <div class="field" style="display:flex; align-items:flex-end;"><button class="btn btn-secondary" type="submit">+ Agregar área</button></div>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

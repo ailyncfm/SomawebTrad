@@ -1,0 +1,1280 @@
+{% extends "base.html" %}
+{% block title %}Programación{% endblock %}
+
+{% block content %}
+<script>window.ORGANIZACION = {{ organizacion | tojson }};</script>
+<script>document.body.dataset.docType = "scheduling";</script>
+<div class="card">
+  <div class="card__header">
+    <div>
+      <h2 class="card__title">{{ data.title or "Programación" }}</h2>
+      <p class="card__subtitle">Completa la evaluación y genera el PDF.</p>
+    </div>
+  </div>
+
+  <div class="card__body">
+    <form class="form" method="post" action="{{ url_for('web.scheduling_generate_pdf') }}">
+
+
+
+      <style>
+        .card__header{ justify-content: center; }
+        .card__header > div{ text-align: center; }
+        .card__title{ word-break: break-word; }
+        .time-row{ display:flex; gap:10px; align-items:center; }
+        .time-row input{ flex: 2; }
+        .time-row select{ flex: 1; }
+        .time-invalid{ border-color:#b00020 !important; }
+
+        table.checklist-table th{ white-space: nowrap; }
+        table.checklist-table td{ font-size: 13px; vertical-align: middle; }
+        .checklist-radio{ text-align:center; }
+        tr.checklist-row--invalid td{ background: #fff5f5; }
+        tr.checklist-row--invalid td:first-child{ box-shadow: inset 3px 0 0 #b00020; }
+        .checklist-error-msg{
+          display:none;
+          color:#b00020;
+          font-size:12px;
+          font-weight:700;
+          margin: 6px 0 0;
+        }
+        .checklist-error-msg.is-visible{ display:block; }
+      </style>
+
+      <div class="section-bar">Datos</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="text" id="fecha" name="fecha" class="date-manual" placeholder="DD/MM/AAAA" inputmode="numeric" autocomplete="off" maxlength="10" required pattern="(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}" title="Formato: DD/MM/AAAA">
+        </div>
+        <div class="field">
+          <label>Hora</label>
+          <input type="text" id="hora" name="hora" placeholder="HH:MM" inputmode="numeric" autocomplete="off" maxlength="5" required />
+        </div>
+        <div class="field">
+          <label>Gerencia</label>
+          <select id="datos_gerencia_select" name="gerencia">
+            <option value="">Selecciona...</option>
+            {% for gerencia in organizacion.keys() %}
+              <option value="{{ gerencia }}">{{ gerencia }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Superintendencia</label>
+          <select id="datos_superintendencia_select" name="superintendencia">
+            <option value="">Selecciona una gerencia primero</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Área</label>
+          <select id="datos_area_select" name="area">
+            <option value="">Selecciona una superintendencia primero</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="section-bar">Observador 1</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Nombre</label>
+          <input type="text" name="obs1_nombre" data-autofill="nombre" />
+        </div>
+        <div class="field">
+          <label>Gerencia</label>
+          <input type="text" name="obs1_gerencia" />
+        </div>
+        <div class="field">
+          <label>Superintendencia</label>
+          <input type="text" name="obs1_superintendencia" />
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label>SAP</label>
+          <input type="text" name="obs1_sap" />
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="text" name="obs1_email" data-autofill="email" />
+        </div>
+        <div class="field">
+          <label>Cargo</label>
+          <input type="text" name="obs1_posicion" />
+        </div>
+      </div>
+
+      <div id="observer2Wrap" class="observer-block" style="display:none;">
+        <div class="hr"></div>
+        <div class="section-bar section-bar--with-action">
+          <span>Observador 2</span>
+          <button type="button" class="btn-trash" onclick="removeObserver2()" title="Eliminar Observador 2" aria-label="Eliminar Observador 2">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Nombre</label>
+            <input type="text" name="obs2_nombre" data-autofill="nombre" />
+          </div>
+        <div class="field">
+          <label>Nombre</label>
+          <input type="text" name="obs2_nombre" data-autofill="nombre" />
+        </div>
+        <div class="field">
+          <label>Gerencia</label>
+          <input type="text" name="obs2_gerencia" />
+        </div>
+        <div class="field">
+          <label>Superintendencia</label>
+          <input type="text" name="obs2_superintendencia" />
+        </div>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>SAP</label>
+            <input type="text" name="obs2_sap" />
+          </div>
+          <div class="field">
+            <label>E-mail</label>
+            <input type="text" name="obs2_email" data-autofill="email" />
+          </div>
+          <div class="field">
+            <label>Cargo</label>
+            <input type="text" name="obs2_posicion" />
+          </div>
+        </div>
+      </div>
+
+      <div id="addObserverWrap" style="margin-top:10px;">
+        <button type="button" class="btn btn-secondary" id="addObserverBtn" onclick="addObserver2()">
+          + Agregar observador
+        </button>
+      </div>
+
+      <div class="hr"></div>
+
+      {% for sec in schema %}
+        {% set si = loop.index0 %}
+        <div class="section-bar">{{ sec.name }}</div>
+
+        {% for it in sec['items'] %}
+          {% set ii = loop.index0 %}
+          <div class="qblock" data-qblock>
+            <div class="qtitle">{{ it.question }}</div>
+            <div class="optgrid">
+              {% for opt in it['options'] %}
+                <label class="optcard">
+                  <input type="radio" name="s{{ si }}_i{{ ii }}" value="{{ loop.index }}" required>
+                  <span class="optbadge">{{ loop.index }}</span>
+                  <span>{{ opt }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            <div class="qblock__error">Debes seleccionar una opción.</div>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
+      <div class="hr"></div>
+
+      <div class="section-bar">Checklist de seguridad</div>
+      <div class="checklist-error-msg" id="checklistError">Hay requisitos sin responder. Revisa las filas marcadas en rojo.</div>
+      <div class="table-wrap">
+        <table class="checklist-table">
+          <thead>
+            <tr>
+              <th style="width:54px;">N°</th>
+              <th>Requisitos reunión de Programación</th>
+              <th class="checklist-radio" style="width:70px;">SI</th>
+              <th class="checklist-radio" style="width:70px;">NO</th>
+              <th style="min-width:200px;">Comentario</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-checklist-row>
+              <td>1</td>
+              <td>Las actividades programadas fueron secuenciadas considerando riesgos e interferencias operacionales.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_0" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_0" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_0_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+            <tr data-checklist-row>
+              <td>2</td>
+              <td>Los preparativos de terreno requeridos fueron considerados para las actividades programadas.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_1" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_1" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_1_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+            <tr data-checklist-row>
+              <td>3</td>
+              <td>Los requerimientos de tránsito, accesos y segregación fueron revisados.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_2" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_2" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_2_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+            <tr data-checklist-row>
+              <td>4</td>
+              <td>Las actividades que requieren permisos o autorizaciones especiales fueron identificadas.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_3" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_3" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_3_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+            <tr data-checklist-row>
+              <td>5</td>
+              <td>Los recursos de apoyo necesarios para la ejecución segura fueron considerados en la programación.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_4" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_4" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_4_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+            <tr data-checklist-row>
+              <td>6</td>
+              <td>Las actividades simultáneas con potencial interferencia fueron coordinadas.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_5" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_5" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_5_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+            <tr data-checklist-row>
+              <td>7</td>
+              <td>Se revisaron las condiciones (acreditaciones, capacitaciones, etc.) necesarias para el inicio seguro de los trabajos programados.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_6" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_6" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_6_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+            <tr data-checklist-row>
+              <td>8</td>
+              <td>Se consideraron los requerimientos de emergencia y respuesta ante contingencias cuando corresponde.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_7" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_7" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_7_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+            <tr data-checklist-row>
+              <td>9</td>
+              <td>Los aspectos de orden, limpieza y gestión de residuos fueron considerados en las actividades programadas.</td>
+              <td class="checklist-radio"><input type="radio" name="chk_8" value="si" onchange="clearChecklistRowError(this)"></td>
+              <td class="checklist-radio"><input type="radio" name="chk_8" value="no" onchange="clearChecklistRowError(this)"></td>
+              <td><input type="text" name="chk_8_comentario" placeholder="Comentario (opcional)"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="field" style="margin-top:10px;">
+        <label>Comentario actividades críticas</label>
+        <input type="text" name="chk_acts_criticas_comentario" placeholder="Comentario">
+      </div>
+
+      <div class="section-bar">Feedback</div>
+
+      <div class="field field--autosize" data-autosize>
+        <label>Fortalezas</label>
+        <textarea name="fortalezas" rows="1"></textarea>
+        <button type="button" class="field--autosize__collapse" title="Colapsar" aria-label="Colapsar">−</button>
+      </div>
+
+      <div class="field field--autosize" data-autosize>
+        <label>Oportunidades</label>
+        <textarea name="oportunidades" rows="1"></textarea>
+        <button type="button" class="field--autosize__collapse" title="Colapsar" aria-label="Colapsar">−</button>
+      </div>
+
+      <div class="field field--autosize" data-autosize>
+        <label>Plan</label>
+        <textarea name="plan" rows="1"></textarea>
+        <button type="button" class="field--autosize__collapse" title="Colapsar" aria-label="Colapsar">−</button>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="section-bar">Compromisos</div>
+      <div class="table-wrap">
+        <table>
+          </thead>
+          <tbody id="commitmentsBody">
+            <tr>
+              <td>
+                <select name="c_area[]" onchange="loadCompromisosAbiertos(this)">
+                  <option value="">Selecciona...</option>
+                  {% for a in participant_areas %}
+                    <option value="{{ a }}">{{ a }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <select name="c_existing_select" onchange="applyExistingCompromiso(this)" disabled>
+                  <option value="">+ Nuevo compromiso</option>
+                </select>
+                <input type="hidden" name="c_thread_id[]" value="">
+              </td>
+              <td><input type="text" name="c_accion[]"></td>
+              <td><input type="text" name="c_responsable[]"></td>
+              <td><input type="text" name="c_fecha[]" class="date-manual" placeholder="DD/MM/AAAA" inputmode="numeric" autocomplete="off" maxlength="10" pattern="(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}" title="Formato: DD/MM/AAAA"></td>
+              <td>
+  <select name="c_estado[]">
+        <option value="">Selecciona...</option>
+        <option value="NO INICIADO">No Iniciado</option>
+        <option value="EN CURSO">En curso</option>
+        <option value="ATRASADO">Atrasado</option>
+        <option value="COMPLETADO">Completado</option>
+        <option value="CANCELADO">Cancelado</option>
+  </select>
+</td>
+              <td><input type="text" name="c_evidencia[]"></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-primary" type="button" onclick="addCommitmentRow()" style="margin-top:10px;">
+        + Agregar compromiso
+      </button>
+
+      <div class="hr"></div>
+
+      <input type="hidden" id="qrMeetingId" name="qr_meeting_id" value="">
+
+      <div style="margin-bottom:16px;">
+        <button type="button" class="btn btn-secondary" id="generateQrBtn" onclick="generateAttendanceQr()">
+          📱 Generar QR de asistencia y conformidad
+        </button>
+        <div id="qrPanel" style="display:none; margin-top:14px;">
+          <div class="card">
+            <div class="card__body" style="text-align:center;">
+              <p style="margin:0 0 10px; font-size:13px; color:var(--muted);">
+                Comparte este QR para que los asistentes registren su asistencia y conformidad con los compromisos.
+                Se actualiza solo a medida que agregues compromisos.
+              </p>
+              <img id="qrImage" src="" alt="Código QR" style="max-width:200px; margin:0 auto; display:block;">
+              <p id="qrUrlText" style="font-size:12px; color:var(--muted); word-break:break-all; margin-top:8px;"></p>
+              <p style="margin-top:10px; font-size:13px; color:var(--muted);">Código para el QR fijo de la sala:</p>
+              <p id="qrShortCode" style="font-size:26px; font-weight:900; letter-spacing:4px; color:var(--primary); margin:2px 0 0;"></p>
+              <p style="margin-top:10px; font-weight:900;">
+                Registrados: <span id="qrCount">0</span>
+              </p>
+              <div id="qrList" style="text-align:left; margin-top:10px; font-size:13px;"></div>
+              <button type="button" class="btn btn-primary" onclick="applyQrParticipants()" style="margin-top:10px;">
+                Agregar a la tabla de Participantes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="section-bar">Participantes</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Área</th>
+              <th>Responsable</th>
+              <th>E-mail</th>
+              <th>Asistió</th>
+              <th>Conforme</th>
+              <th style="width:46px;"></th>
+            </tr>
+          </thead>
+          <tbody id="participantsBody">
+            {% for a in participant_areas %}
+              <tr>
+                <td>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                    <span>{{ a }}</span>
+                    <button type="button" class="btn-add-inline" onclick="addParticipantRow('{{ a }}', this)" title="Agregar otro participante de {{ a }}" aria-label="Agregar participante de {{ a }}">+</button>
+                  </div>
+                </td>
+                <td><input type="text" name="p_responsable_{{ loop.index0 }}"></td>
+                <td><input type="email" name="p_email_{{ loop.index0 }}" placeholder="correo@dominio.cl"></td>
+                <td>
+                  <label style="margin-right:10px; display:inline-flex; align-items:center; gap:6px;">
+                    <input type="radio" name="p_asistio_{{ loop.index0 }}" value="si"> Sí
+                  </label>
+                  <label style="display:inline-flex; align-items:center; gap:6px;">
+                    <input type="radio" name="p_asistio_{{ loop.index0 }}" value="no"> No
+                  </label>
+                </td>
+                <td>
+                  <label style="margin-right:10px; display:inline-flex; align-items:center; gap:6px;">
+                    <input type="radio" name="p_conforme_{{ loop.index0 }}" value="si"> Sí
+                  </label>
+                  <label style="display:inline-flex; align-items:center; gap:6px;">
+                    <input type="radio" name="p_conforme_{{ loop.index0 }}" value="no"> No
+                  </label>
+                </td>
+                <td></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="actions" style="margin-top:16px;">
+        <button class="btn btn-primary" type="submit">Generar PDF</button>
+        <button class="btn btn-secondary" type="button" onclick="clearFormCompletely(document.querySelector('form'), DRAFT_STORAGE_KEY)">Limpiar formulario</button>
+        <a class="btn btn-secondary" href="{{ url_for('web.home') }}">Volver</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+
+function buildCommitmentsSummary(form){
+  const rows = [];
+  form.querySelectorAll("#commitmentsBody tr").forEach(tr => {
+    const accion = (tr.querySelector('[name="c_accion[]"]')?.value || "").trim();
+    const responsable = (tr.querySelector('[name="c_responsable[]"]')?.value || "").trim();
+    const fecha = (tr.querySelector('[name="c_fecha[]"]')?.value || "").trim();
+    const estado = (tr.querySelector('[name="c_estado[]"]')?.value || "").trim();
+    const evidencia = (tr.querySelector('[name="c_evidencia[]"]')?.value || "").trim();
+    if(accion || responsable || fecha || estado || evidencia){
+      rows.push({ accion, responsable, fecha, estado, evidencia });
+    }
+  });
+  return rows;
+}
+
+function buildParticipantsSummary(form){
+  const rows = [];
+
+  form.querySelectorAll('table tbody tr').forEach(tr => {
+    if(tr.closest('tbody')?.id === 'commitmentsBody') return;
+    if(tr.dataset.qrImported === "1") return;
+
+    const respInput = tr.querySelector('input[name^="p_responsable_"]');
+    if(!respInput) return;
+
+    const responsable = respInput.value.trim();
+    if(!responsable) return;
+
+    const suffix = respInput.name.replace('p_responsable_', '');
+
+    const areaInput = tr.querySelector('input[name^="p_area_"]');
+    const area = areaInput
+      ? areaInput.value.trim()
+      : (tr.querySelector('td:first-child span')?.textContent.trim() || "");
+
+    const email = (tr.querySelector(`input[name="p_email_${suffix}"]`)?.value || "").trim();
+    const asistio = tr.querySelector(`input[name="p_asistio_${suffix}"]:checked`)?.value || "";
+    const conforme = tr.querySelector(`input[name="p_conforme_${suffix}"]:checked`)?.value || "";
+
+    rows.push({ area, responsable, email, asistio, conforme });
+  });
+
+  const qrArea = form.querySelectorAll('input[name="qr_p_area[]"]');
+  const qrNombre = form.querySelectorAll('input[name="qr_p_nombre[]"]');
+  const qrEmail = form.querySelectorAll('input[name="qr_p_email[]"]');
+  const qrConforme = form.querySelectorAll('input[name="qr_p_conforme[]"]');
+  qrNombre.forEach((inp, i) => {
+    const responsable = inp.value.trim();
+    if(!responsable) return;
+    rows.push({
+      area: (qrArea[i]?.value || "").trim(),
+      responsable,
+      email: (qrEmail[i]?.value || "").trim(),
+      asistio: "si",
+      conforme: (qrConforme[i]?.value || "").trim(),
+    });
+  });
+
+  return rows;
+}
+
+function collectParticipantEmails(form){
+  const emails = [];
+  form.querySelectorAll('input[name^="p_email_"], input[name="qr_p_email[]"]').forEach(inp => {
+    const v = (inp.value || "").trim();
+    if(v && !emails.includes(v)) emails.push(v);
+  });
+  return emails;
+}
+
+function offerEmailSummary(form){
+  const commitments = buildCommitmentsSummary(form);
+  const participants = buildParticipantsSummary(form);
+
+  if(commitments.length === 0 && participants.length === 0) return;
+
+  const wantsEmail = window.confirm("¿Enviar un resumen de esta reunión por correo?");
+  if(!wantsEmail) return;
+
+  const titleEl = document.querySelector(".card__title");
+  const tituloCompleto = titleEl ? titleEl.textContent.trim() : "Formulario SOMA";
+  const tituloCorto = tituloCompleto.replace("Confirmación de rol", "CdR");
+  const fecha = (form.querySelector('input[name="fecha"]')?.value || "").trim();
+
+  let subjectParts = [];
+  if(commitments.length > 0) subjectParts.push("Compromisos");
+  if(participants.length > 0) subjectParts.push("Asistencia");
+  const subject = `${subjectParts.join(" y ")} - ${tituloCorto} - ${fecha}`;
+
+  let body = `Resumen de la reunión (${tituloCorto} - ${fecha}):\n\n`;
+
+  if(commitments.length > 0){
+    body += `COMPROMISOS ACORDADOS:\n${"=".repeat(20)}\n\n`;
+    commitments.forEach((r, i) => {
+      body += `${i + 1}. Acción: ${r.accion}\n`;
+      body += `   Responsable: ${r.responsable}\n`;
+      body += `   Fecha compromiso: ${r.fecha}\n`;
+      body += `   Estado: ${r.estado}\n`;
+      body += `   Evidencia: ${r.evidencia}\n\n`;
+    });
+  }
+
+  if(participants.length > 0){
+    body += `ASISTENCIA:\n${"=".repeat(20)}\n\n`;
+    participants.forEach((p, i) => {
+      const asistioTxt = p.asistio === "si" ? "Sí" : (p.asistio === "no" ? "No" : "Sin responder");
+      const conformeTxt = p.conforme === "si" ? "Sí" : (p.conforme === "no" ? "No" : "Sin responder");
+      body += `${i + 1}. ${p.responsable} (${p.area || "sin área"})\n`;
+      body += `   Asistió: ${asistioTxt}\n`;
+      body += `   Conforme con los compromisos: ${conformeTxt}\n`;
+      body += `\n`;
+    });
+  }
+
+  body += "Se adjunta el PDF generado por SOMA Web (*adjuntar manualmente*).";
+
+  const emails = collectParticipantEmails(form);
+  const to = emails.join(",");
+
+  const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
+}
+
+let extraParticipantCounter = 0;
+
+function addParticipantRow(area, sourceBtn){
+  const isOtro = area.trim().toUpperCase() === "OTRO";
+  const n = extraParticipantCounter++;
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input type="text" name="p_area_extra_${n}" value="${isOtro ? "" : area}" placeholder="${isOtro ? "Especifica el área" : ""}" ${isOtro ? "" : "readonly"}></td>
+    <td><input type="text" name="p_responsable_extra_${n}"></td>
+    <td><input type="email" name="p_email_extra_${n}" placeholder="correo@dominio.cl"></td>
+    <td>
+      <label style="margin-right:10px; display:inline-flex; align-items:center; gap:6px;">
+        <input type="radio" name="p_asistio_extra_${n}" value="si"> Sí
+      </label>
+      <label style="display:inline-flex; align-items:center; gap:6px;">
+        <input type="radio" name="p_asistio_extra_${n}" value="no"> No
+      </label>
+    </td>
+    <td>
+      <label style="margin-right:10px; display:inline-flex; align-items:center; gap:6px;">
+        <input type="radio" name="p_conforme_extra_${n}" value="si"> Sí
+      </label>
+      <label style="display:inline-flex; align-items:center; gap:6px;">
+        <input type="radio" name="p_conforme_extra_${n}" value="no"> No
+      </label>
+    </td>
+    <td style="text-align:center;">
+      <button type="button" class="btn-trash" onclick="this.closest('tr').remove()" title="Eliminar participante" aria-label="Eliminar participante">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </td>
+  `;
+
+  const sourceRow = sourceBtn ? sourceBtn.closest("tr") : null;
+  if(sourceRow && sourceRow.nextSibling){
+    sourceRow.parentNode.insertBefore(tr, sourceRow.nextSibling);
+  } else if(sourceRow){
+    sourceRow.parentNode.appendChild(tr);
+  } else {
+    document.getElementById("participantsBody").appendChild(tr);
+  }
+}
+
+let currentMeetingId = null;
+let qrPollInterval = null;
+let lastQrParticipants = [];
+let qrCommitSyncTimeout = null;
+
+function getFormMeta(form){
+  const titleEl = document.querySelector(".card__title");
+  const titulo = titleEl ? titleEl.textContent.trim() : "Formulario SOMA";
+  const fecha = (form.querySelector('input[name="fecha"]')?.value || "").trim();
+  const participantAreas = [];
+  document.querySelectorAll('#participantsBody tr td:first-child span').forEach(span => {
+    const t = span.textContent.trim();
+    if(t && !participantAreas.includes(t)) participantAreas.push(t);
+  });
+  return { titulo, fecha, participantAreas };
+}
+
+function showQrPanel(meetingId){
+  document.getElementById("qrImage").src = `/qr/image/${meetingId}`;
+  document.getElementById("qrUrlText").textContent = window.location.origin + "/asistencia/" + meetingId;
+  document.getElementById("qrPanel").style.display = "block";
+  document.getElementById("generateQrBtn").textContent = "📱 QR de asistencia activo";
+
+  if(qrPollInterval) clearInterval(qrPollInterval);
+  qrPollInterval = setInterval(pollQrParticipants, 4000);
+  pollQrParticipants();
+}
+
+function generateAttendanceQr(){
+  const form = document.querySelector("form");
+  const { titulo, fecha, participantAreas } = getFormMeta(form);
+  const commitments = buildCommitmentsSummary(form);
+
+  fetch("/qr/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      doc_type: "scheduling",
+      title: titulo,
+      fecha: fecha,
+      commitments: commitments,
+      participant_areas: participantAreas,
+    }),
+  })
+  .then(r => r.json())
+  .then(res => {
+    currentMeetingId = res.meeting_id;
+    document.getElementById("qrMeetingId").value = res.meeting_id;
+    document.getElementById("qrShortCode").textContent = res.short_code || "";
+    showQrPanel(res.meeting_id);
+  })
+  .catch(err => {
+    console.error(err);
+    alert("No se pudo generar el QR. Intenta nuevamente.");
+  });
+}
+
+function syncCommitmentsToQr(){
+  if(!currentMeetingId) return;
+  clearTimeout(qrCommitSyncTimeout);
+  qrCommitSyncTimeout = setTimeout(() => {
+    const form = document.querySelector("form");
+    const commitments = buildCommitmentsSummary(form);
+    fetch(`/qr/update/${currentMeetingId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ commitments }),
+    }).catch(err => console.error(err));
+  }, 800);
+}
+
+function pollQrParticipants(){
+  if(!currentMeetingId) return;
+  fetch(`/qr/participants/${currentMeetingId}`)
+    .then(r => r.json())
+    .then(res => {
+      lastQrParticipants = res.participants || [];
+      document.getElementById("qrCount").textContent = lastQrParticipants.length;
+      const listEl = document.getElementById("qrList");
+      listEl.innerHTML = lastQrParticipants.map(p =>
+        `<div>• ${p.nombre} (${p.area || "sin área"}) — ${p.conforme === "si" ? "✅ Conforme" : "❌ No conforme"}</div>`
+      ).join("");
+    })
+    .catch(err => console.error(err));
+}
+
+function applyQrParticipants(){
+  document.querySelectorAll('#participantsBody tr').forEach(tr => {
+    if(tr.dataset.qrImported === "1") tr.remove();
+  });
+
+  lastQrParticipants.forEach(p => {
+    const conformeTxt = p.conforme === "si" ? "✅ Sí" : (p.conforme === "no" ? "❌ No" : "—");
+    const tr = document.createElement("tr");
+    tr.dataset.qrImported = "1";
+    tr.innerHTML = `
+      <td><span>${p.area || "Sin área"}</span></td>
+      <td>${p.nombre}</td>
+      <td>${p.email || ""}</td>
+      <td>Sí (vía QR)</td>
+      <td>${conformeTxt}</td>
+      <td></td>
+      <input type="hidden" name="qr_p_area[]" value="${p.area || ''}">
+      <input type="hidden" name="qr_p_nombre[]" value="${p.nombre}">
+      <input type="hidden" name="qr_p_email[]" value="${p.email || ''}">
+      <input type="hidden" name="qr_p_conforme[]" value="${p.conforme || ''}">
+    `;
+    document.getElementById("participantsBody").appendChild(tr);
+  });
+
+  alert(`${lastQrParticipants.length} participante(s) se agregarán al generar el PDF.`);
+}
+
+function addCommitmentRow() {
+  const tbody = document.getElementById("commitmentsBody");
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+  <td>
+    <select name="c_area[]" onchange="loadCompromisosAbiertos(this)">
+      <option value="">Selecciona...</option>
+      {% for a in participant_areas %}
+        <option value="{{ a }}">{{ a }}</option>
+      {% endfor %}
+    </select>
+  </td>
+  <td>
+    <select name="c_existing_select" onchange="applyExistingCompromiso(this)" disabled>
+      <option value="">+ Nuevo compromiso</option>
+    </select>
+    <input type="hidden" name="c_thread_id[]" value="">
+  </td>
+  <td><input type="text" name="c_accion[]"></td>
+    <td><input type="text" name="c_responsable[]"></td>
+    <td><input type="text" name="c_fecha[]" class="date-manual" placeholder="DD/MM/AAAA" inputmode="numeric" autocomplete="off" maxlength="10" pattern="(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}" title="Formato: DD/MM/AAAA"></td>
+        <td>
+      <select name="c_estado[]">
+        <option value="">Selecciona...</option>
+        <option value="NO INICIADO">No Iniciado</option>
+        <option value="EN CURSO">En curso</option>
+        <option value="ATRASADO">Atrasado</option>
+        <option value="COMPLETADO">Completado</option>
+        <option value="CANCELADO">Cancelado</option>
+      </select>
+    </td>
+    <td><input type="text" name="c_evidencia[]"></td>
+    <td style="text-align:center;">
+      <button type="button" class="btn-trash" onclick="removeCommitmentRow(this)" title="Eliminar compromiso" aria-label="Eliminar compromiso">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </td>
+  `;
+  tbody.appendChild(tr);
+  if (window.SOMA_initDateWraps) window.SOMA_initDateWraps(tr);
+}
+
+function removeCommitmentRow(btn) {
+  const tr = btn.closest("tr");
+  tr.remove();
+}
+
+function setupHora24(form){
+  const t = form.querySelector('input[name="hora"]');
+  if(!t) return;
+
+  function applyMask(padOnBlur){
+    const digits = (t.value || "").replace(/\D/g, "").slice(0, 4);
+    let hour = null;
+    let minDigits = "";
+    let display = "";
+    let msg = "";
+
+    if(!digits){
+      t.classList.remove("time-invalid");
+      t.setCustomValidity("");
+      return;
+    }
+
+    if(digits.length <= 2){
+      hour = parseInt(digits, 10);
+      display = padOnBlur ? String(hour).padStart(2,"0") + ":00" : digits;
+      if(digits.length === 2 && !padOnBlur) display = digits + ":";
+    } else {
+      hour = parseInt(digits.slice(0,2), 10);
+      minDigits = digits.slice(2);
+      const hh = String(hour).padStart(2,"0");
+      if(padOnBlur){
+        if(minDigits.length === 1) minDigits = minDigits + "0";
+        display = hh + ":" + minDigits.slice(0,2);
+      } else {
+        display = hh + ":" + minDigits;
+      }
+    }
+
+    if(hour !== null && hour > 23){
+      msg = "Hora debe ser 00 a 23.";
+    }
+    const m2 = display.match(/^(\d{2}):(\d{2})$/);
+    if(m2){
+      const mm = parseInt(m2[2], 10);
+      if(mm > 59) msg = "Minutos deben ser 00 a 59.";
+    }
+
+    t.value = display;
+
+    if(msg){
+      t.classList.add("time-invalid");
+      t.setCustomValidity(msg);
+    } else {
+      t.classList.remove("time-invalid");
+      t.setCustomValidity("");
+    }
+  }
+
+  t.addEventListener("input", () => applyMask(false));
+  t.addEventListener("blur",  () => applyMask(true));
+}
+
+function autofillFechaHora(form){
+  const fecha = form.querySelector('input[name="fecha"]');
+  const hora = form.querySelector('input[name="hora"]');
+  const now = new Date();
+
+  if(fecha && !fecha.value){
+    const dd = String(now.getDate()).padStart(2,"0");
+    const mm = String(now.getMonth()+1).padStart(2,"0");
+    const yyyy = now.getFullYear();
+    fecha.value = `${dd}/${mm}/${yyyy}`;
+  }
+
+  if(hora && !hora.value){
+    const hh = String(now.getHours()).padStart(2,"0");
+    const min = String(now.getMinutes()).padStart(2,"0");
+    hora.value = `${hh}:${min}`;
+  }
+}
+
+function addObserver2(){
+  document.getElementById("observer2Wrap").style.display = "";
+  document.getElementById("addObserverWrap").style.display = "none";
+}
+
+function removeObserver2(){
+  const wrap = document.getElementById("observer2Wrap");
+  wrap.querySelectorAll("input").forEach(inp => inp.value = "");
+  wrap.style.display = "none";
+  document.getElementById("addObserverWrap").style.display = "";
+}
+
+function validateQuestionBlocks(form){
+  let firstInvalid = null;
+  const blocks = form.querySelectorAll("[data-qblock]");
+
+  blocks.forEach(block => {
+    const radios = block.querySelectorAll('input[type="radio"]');
+    const answered = Array.from(radios).some(r => r.checked);
+
+    if(!answered){
+      block.classList.add("qblock--invalid");
+      if(!firstInvalid) firstInvalid = block;
+    } else {
+      block.classList.remove("qblock--invalid");
+    }
+  });
+
+  return firstInvalid;
+}
+
+function clearQblockErrorOnChange(form){
+  form.querySelectorAll('[data-qblock] input[type="radio"]').forEach(radio => {
+    radio.addEventListener("change", () => {
+      radio.closest("[data-qblock]").classList.remove("qblock--invalid");
+    });
+  });
+}
+
+function validateChecklist(form){
+  let firstInvalid = null;
+  form.querySelectorAll("[data-checklist-row]").forEach(row => {
+    const checked = row.querySelector('input[type="radio"]:checked');
+    if(!checked){
+      row.classList.add("checklist-row--invalid");
+      if(!firstInvalid) firstInvalid = row;
+    } else {
+      row.classList.remove("checklist-row--invalid");
+    }
+  });
+
+  const err = form.querySelector("#checklistError");
+  if(err) err.classList.toggle("is-visible", !!firstInvalid);
+
+  return firstInvalid;
+}
+
+function clearChecklistRowError(input){
+  const row = input.closest("[data-checklist-row]");
+  if(row) row.classList.remove("checklist-row--invalid");
+}
+
+function setupAutosizeTextareas(form){
+  form.querySelectorAll("[data-autosize]").forEach(wrap => {
+    const ta = wrap.querySelector("textarea");
+    const collapseBtn = wrap.querySelector(".field--autosize__collapse");
+    if(!ta) return;
+
+    function resize(){
+      ta.style.height = "auto";
+      ta.style.height = ta.scrollHeight + "px";
+      wrap.classList.toggle("is-expanded", ta.scrollHeight > 44);
+    }
+
+    ta.addEventListener("input", resize);
+    resize();
+
+    if(collapseBtn){
+      collapseBtn.addEventListener("click", () => {
+        ta.style.height = "40px";
+        wrap.classList.remove("is-expanded");
+        ta.blur();
+      });
+    }
+  });
+}
+
+function hasAnyCommitments(form){
+  return buildCommitmentsSummary(form).length > 0;
+}
+
+function hasAnyParticipant(form){
+  let found = false;
+
+  form.querySelectorAll('table tbody tr').forEach(tr => {
+    if(tr.closest('tbody')?.id === 'commitmentsBody') return;
+    const resp = tr.querySelector('input[name^="p_responsable_"]');
+    if(resp && resp.value.trim() !== ""){
+      found = true;
+    }
+  });
+
+  form.querySelectorAll('input[name="qr_p_nombre[]"]').forEach(inp => {
+    if(inp.value.trim() !== ""){
+      found = true;
+    }
+  });
+
+  return found;
+}
+
+function scrollToParticipants(){
+  const heading = Array.from(document.querySelectorAll('.section-bar'))
+    .find(el => el.textContent.trim() === 'Participantes');
+  if(heading) heading.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+const DRAFT_STORAGE_KEY = "soma_draft_scheduling_user_{{ current_user.id }}"; // distinto en cada formulario
+
+function serializeFormDraft(form){
+  const data = {};
+  const formData = new FormData(form);
+  for (const [key, value] of formData.entries()) {
+    if (data.hasOwnProperty(key)) {
+      if (Array.isArray(data[key])) {
+        data[key].push(value);
+      } else {
+        data[key] = [data[key], value];
+      }
+    } else {
+      data[key] = value;
+    }
+  }
+  return data;
+}
+
+function saveDraft(form, storageKey){
+  try {
+    const data = serializeFormDraft(form);
+    data.__savedAt = new Date().toISOString();
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  } catch(err) {
+    console.error("No se pudo guardar el borrador:", err);
+  }
+}
+
+function clearDraft(storageKey){
+  try { localStorage.removeItem(storageKey); } catch(err) {}
+}
+
+function countArrayLen(data, prefix){
+  const v = data[prefix];
+  if (Array.isArray(v)) return v.length;
+  if (v !== undefined) return 1;
+  return 0;
+}
+
+function restoreDraft(form, data){
+  const hasObs2 = ["obs2_nombre","obs2_gerencia","obs2_superintendencia","obs2_sap","obs2_email","obs2_posicion"]
+    .some(k => (data[k] || "").toString().trim() !== "");
+  if(hasObs2){
+    addObserver2();
+  }
+
+  const commitCount = Math.max(
+    countArrayLen(data, "c_accion[]"),
+    countArrayLen(data, "c_responsable[]"),
+    countArrayLen(data, "c_fecha[]"),
+    countArrayLen(data, "c_estado[]"),
+    countArrayLen(data, "c_evidencia[]")
+  );
+  for(let i = 1; i < commitCount; i++){
+    addCommitmentRow();
+  }
+
+  const extraIdx = new Set();
+  Object.keys(data).forEach(k => {
+    const m = k.match(/^p_responsable_extra_(\d+)$/);
+    if(m) extraIdx.add(parseInt(m[1], 10));
+  });
+  const sortedIdx = Array.from(extraIdx).sort((a,b)=>a-b);
+  sortedIdx.forEach(() => addParticipantRow("OTRO", null));
+
+  sortedIdx.forEach((origIdx, i) => {
+    ["p_area_extra_", "p_responsable_extra_", "p_email_extra_", "p_asistio_extra_"].forEach(prefix => {
+      const oldKey = `${prefix}${origIdx}`;
+      const newKey = `${prefix}${i}`;
+      if(data[oldKey] !== undefined){
+        data[newKey] = data[oldKey];
+      }
+    });
+  });
+
+  form.querySelectorAll("input, textarea, select").forEach(el => {
+    const name = el.name;
+    if(!name || !data.hasOwnProperty(name) || name.endsWith("[]")) return;
+    const val = data[name];
+
+    if(el.type === "radio"){
+      el.checked = (el.value === val);
+    } else {
+      el.value = Array.isArray(val) ? (val[0] || "") : val;
+    }
+  });
+
+  ["c_accion[]","c_responsable[]","c_fecha[]","c_estado[]","c_evidencia[]"].forEach(key => {
+    const vals = data[key];
+    if(!vals) return;
+    const arr = Array.isArray(vals) ? vals : [vals];
+    const inputs = form.querySelectorAll(`[name="${key.replace('[]','\\[\\]')}"]`);
+    inputs.forEach((el, i) => {
+      if(arr[i] !== undefined) el.value = arr[i];
+    });
+  });
+
+  const superSelect = form.querySelector("#datos_superintendencia_select");
+  if(superSelect && data["superintendencia"]) superSelect.dataset.preselect = data["superintendencia"];
+  const areaSelectEl = form.querySelector("#datos_area_select");
+  if(areaSelectEl && data["area"]) areaSelectEl.dataset.preselect = data["area"];
+
+  setupAutosizeTextareas(form);
+  const horaInput = form.querySelector('input[name="hora"]');
+  if(horaInput) horaInput.dispatchEvent(new Event("blur"));
+}
+
+function initDraftSystem(form, storageKey){
+  try{
+    const raw = localStorage.getItem(storageKey);
+    if(raw){
+      const data = JSON.parse(raw);
+      const savedAt = data.__savedAt ? new Date(data.__savedAt) : null;
+      const fechaTxt = savedAt ? savedAt.toLocaleString("es-CL") : "";
+      const recuperar = window.confirm(
+        `Hay un borrador guardado${fechaTxt ? " del " + fechaTxt : ""}. ¿Deseas recuperarlo?`
+      );
+      if(recuperar){
+        restoreDraft(form, data);
+      } else {
+        clearDraft(storageKey);
+      }
+    }
+  } catch(err){
+    console.error("No se pudo leer el borrador guardado:", err);
+  }
+
+  let saveTimeout = null;
+  const scheduleSave = () => {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => saveDraft(form, storageKey), 800);
+  };
+  form.addEventListener("input", scheduleSave);
+  form.addEventListener("change", scheduleSave);
+}
+
+function clearFormCompletely(form, storageKey){
+  const confirmar = window.confirm("¿Seguro que deseas limpiar todo el formulario? Se perderán los datos ingresados.");
+  if(!confirmar) return;
+
+  form.reset();
+
+  const commitBody = document.getElementById("commitmentsBody");
+  if(commitBody){
+    Array.from(commitBody.querySelectorAll("tr")).slice(1).forEach(tr => tr.remove());
+  }
+
+  document.querySelectorAll('#participantsBody tr').forEach(tr => {
+    if(tr.querySelector('input[name^="p_area_extra_"]')){
+      tr.remove();
+    }
+  });
+
+  removeObserver2();
+
+  const qrIdInput = document.getElementById("qrMeetingId");
+  if(qrIdInput) qrIdInput.value = "";
+  currentMeetingId = null;
+  if(qrPollInterval) clearInterval(qrPollInterval);
+  document.getElementById("qrPanel").style.display = "none";
+  document.getElementById("generateQrBtn").textContent = "📱 Generar QR de asistencia y conformidad";
+
+  clearDraft(storageKey);
+  autofillFechaHora(form);
+  setupAutosizeTextareas(form);
+}
+
+function reconcileConformeLocks(form){
+  const rows = new Set();
+  form.querySelectorAll('input[name^="p_asistio_"]').forEach(r => rows.add(r.closest('tr')));
+  rows.forEach(tr => {
+    if(!tr) return;
+    const checkedAsistio = tr.querySelector('input[name^="p_asistio_"]:checked');
+    const conformeRadios = tr.querySelectorAll('input[name^="p_conforme_"]');
+    if(checkedAsistio && checkedAsistio.value === 'no'){
+      conformeRadios.forEach(r => { r.checked = false; r.disabled = true; });
+    } else {
+      conformeRadios.forEach(r => { r.disabled = false; });
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form");
+  if(form){
+    autofillFechaHora(form);
+    setupHora24(form);
+    clearQblockErrorOnChange(form);
+    setupAutosizeTextareas(form);
+    initDraftSystem(form, DRAFT_STORAGE_KEY);
+    initGerenciaSuperintendenciaAreaSelects("datos_gerencia_select", "datos_superintendencia_select", "datos_area_select");
+    reconcileConformeLocks(form);
+
+    form.addEventListener("change", (e) => {
+      if(e.target.matches('input[name^="p_asistio_"]')){
+        reconcileConformeLocks(form);
+      }
+    });
+
+    const existingMeetingId = document.getElementById("qrMeetingId")?.value;
+    if(existingMeetingId){
+      currentMeetingId = existingMeetingId;
+      showQrPanel(existingMeetingId);
+    }
+    form.querySelector("#commitmentsBody")?.addEventListener("input", syncCommitmentsToQr);
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const firstInvalidQ = validateQuestionBlocks(form);
+      const firstInvalidC = validateChecklist(form);
+      const firstInvalid = firstInvalidQ || firstInvalidC;
+      if(firstInvalid){
+        firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      if(!hasAnyParticipant(form)){
+        alert("Debes agregar al menos un participante antes de generar el PDF.");
+        scrollToParticipants();
+        return;
+      }
+
+      if(!hasAnyCommitments(form)){
+        const continuar = window.confirm(
+          "No has agregado compromisos. ¿Deseas continuar de todas formas?"
+        );
+        if(!continuar) return;
+      }
+
+      const confirmar = window.confirm("¿Quieres generar el PDF de esta reunión?");
+      if(!confirmar) return;
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if(submitBtn) submitBtn.disabled = true;
+
+      try{
+        const formData = new FormData(form);
+        const resp = await fetch(form.action, { method: "POST", body: formData });
+        if(!resp.ok) throw new Error("Error al generar el PDF");
+
+        const blob = await resp.blob();
+        const cd = resp.headers.get("Content-Disposition") || "";
+        const match = cd.match(/filename="?([^"]+)"?/);
+        const filename = match ? match[1] : "documento.pdf";
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        clearDraft(DRAFT_STORAGE_KEY);
+        offerEmailSummary(form);
+      } catch(err){
+        console.error(err);
+        alert("Ocurrió un error al generar el PDF. Intenta nuevamente.");
+      } finally {
+        if(submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  if(
+    e.key === "Enter" &&
+    e.target.tagName !== "TEXTAREA"
+  ){
+    e.preventDefault();
+  }
+});
+
+function loadCompromisosAbiertos(areaSelect){
+  const tr = areaSelect.closest("tr");
+  const existingSelect = tr.querySelector('select[name="c_existing_select"]');
+  const area = areaSelect.value;
+
+  existingSelect.innerHTML = '<option value="">+ Nuevo compromiso</option>';
+  existingSelect.disabled = !area;
+  if(!area) return;
+
+  const docType = document.body.dataset.docType || "";
+  fetch(`/compromisos/abiertos?doc_type=${encodeURIComponent(docType)}&area=${encodeURIComponent(area)}`)
+    .then(r => r.json())
+    .then(res => {
+      (res.compromisos || []).forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.thread_id;
+        const prefix = c.vencido ? "⚠ VENCIDO — " : "";
+        opt.textContent = `${prefix}${c.accion} (${c.responsable}, ${c.estado || "sin estado"})`;
+        opt.dataset.accion = c.accion;
+        opt.dataset.responsable = c.responsable;
+        opt.dataset.fecha = c.fecha;
+        if(c.vencido) opt.style.color = "#b00020";
+        existingSelect.appendChild(opt);
+      });
+    })
+    .catch(err => console.error(err));
+}
+
+function applyExistingCompromiso(select){
+  const tr = select.closest("tr");
+  const opt = select.selectedOptions[0];
+  const threadInput = tr.querySelector('input[name="c_thread_id[]"]');
+
+  if(!opt || !opt.value){
+    threadInput.value = "";
+    return;
+  }
+
+  threadInput.value = opt.value;
+  tr.querySelector('input[name="c_accion[]"]').value = opt.dataset.accion || "";
+  tr.querySelector('input[name="c_responsable[]"]').value = opt.dataset.responsable || "";
+  // La fecha se precarga pero queda editable, tal como el resto de los campos.
+  tr.querySelector('input[name="c_fecha[]"]').value = opt.dataset.fecha || "";
+  const estadoSelect = tr.querySelector('select[name="c_estado[]"]');
+  if(estadoSelect) estadoSelect.value = "";
+  tr.querySelector('input[name="c_evidencia[]"]').value = "";
+}
+</script>
+{% endblock %}

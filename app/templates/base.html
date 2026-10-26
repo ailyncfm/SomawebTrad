@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}SOMA Web{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body data-doc-type="{{ request.endpoint.split('.')[-1].replace('_form','').replace('_generate_pdf','') if request.endpoint else '' }}">
+
+<header class="topbar">
+  <div class="container topbar__inner">
+    <a class="brand" href="{{ url_for('web.home') }}">
+      <img class="brand__logo" src="{{ url_for('static', filename='img/codelco.png') }}" alt="Codelco">
+      <div class="brand__name">SOMA Web</div>
+    </a>
+
+    <nav class="nav">
+      <a href="{{ url_for('web.home') }}" class="{{ 'active' if request.endpoint == 'web.home' else '' }}">Inicio</a>
+      {% if current_user.is_authenticated %}
+        <div class="user-menu" id="userMenu">
+          <button type="button" class="user-menu__trigger" onclick="toggleUserMenu()">
+            👤 {{ current_user.nombre }}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left:4px;">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="user-menu__dropdown" id="userMenuDropdown">
+            <a href="{{ url_for('web.historial') }}" class="{{ 'active' if request.endpoint == 'web.historial' else '' }}">Mi historial</a>
+            {% if current_user.is_admin %}
+              <a href="{{ url_for('web.admin_panel') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('web.admin') else '' }}">Admin</a>
+            {% endif %}
+            <div class="user-menu__divider"></div>
+            <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
+          </div>
+        </div>
+      {% else %}
+        <a href="{{ url_for('auth.login_form') }}">Iniciar sesión</a>
+        <a href="{{ url_for('auth.register_form') }}">Crear cuenta</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>SOMA Web | División El Teniente · v{{ app_version }}</div>
+    <a href="mailto:aflor038@codelco.cl?subject=Soporte%20SOMA%20Web" class="footer__support">
+      ¿Necesitas ayuda? Contactar soporte
+    </a>
+  </div>
+</footer>
+
+    <script src="{{ url_for('static', filename='js/date_ddmmyyyy.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/organizacion_cascade.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/organizacion_cascade.js') }}"></script><script src="{{ url_for('static', filename='js/gerencias_data.js') }}"></script>
+  <script>
+    function toggleUserMenu(){
+      document.getElementById("userMenuDropdown")?.classList.toggle("is-open");
+    }
+
+    document.addEventListener("click", function(e){
+      const menu = document.getElementById("userMenu");
+      if(menu && !menu.contains(e.target)){
+        document.getElementById("userMenuDropdown")?.classList.remove("is-open");
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Panel de administración{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card__header">
+    <div>
+      <h2 class="card__title">Panel de administración</h2>
+      <p class="card__subtitle">Historial de todas las reuniones generadas.</p>
+    </div>
+  </div>
+
+  <div class="card__body">
+    <div class="actions" style="margin-bottom:20px;">
+      <a class="btn btn-primary" href="{{ url_for('web.admin_panel') }}">Ver reuniones</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_seguimiento') }}">Seguimiento</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_usuarios') }}">Gestionar usuarios</a>
+      <a class="btn btn-secondary" href="{{ url_for('web.admin_organizacion') }}">Gerencias y áreas</a>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+      <a href="{{ url_for('web.admin_panel') }}" class="btn {{ 'btn-primary' if not doc_type_filter else 'btn-secondary' }}">Todos los tipos</a>
+      <a href="{{ url_for('web.admin_panel', tipo='prioritization') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'prioritization' else 'btn-secondary' }}">Priorización</a>
+      <a href="{{ url_for('web.admin_panel', tipo='planning') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'planning' else 'btn-secondary' }}">Planificación</a>
+      <a href="{{ url_for('web.admin_panel', tipo='scheduling') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'scheduling' else 'btn-secondary' }}">Programación</a>
+      <a href="{{ url_for('web.admin_panel', tipo='post') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'post' else 'btn-secondary' }}">Post Mantención</a>
+      <a href="{{ url_for('web.admin_panel', tipo='process_5s') }}" class="btn {{ 'btn-primary' if doc_type_filter == 'process_5s' else 'btn-secondary' }}">Conciliación SEP4</a>
+    </div>
+
+    <div class="field" style="max-width:320px; margin-bottom:16px;">
+      <label>Filtrar por usuario</label>
+      <select onchange="window.location.href = this.value">
+        <option value="{{ url_for('web.admin_panel', tipo=doc_type_filter) }}">Todos los usuarios</option>
+        {% for u in usuarios %}
+          <option value="{{ url_for('web.admin_panel', tipo=doc_type_filter, usuario=u.id) }}" {{ 'selected' if usuario_filter == u.id|string else '' }}>
+            {{ u.nombre }} ({{ u.email }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {% if reuniones %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Título</th>
+              <th>Fecha reunión</th>
+              <th>Área</th>
+              <th>Generado por</th>
+              <th>Generado</th>
+              <th style="width:120px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in reuniones %}
+              <tr>
+                <td>{{ doc_labels.get(r.doc_type, r.doc_type) }}</td>
+                <td>{{ r.titulo }}</td>
+                <td>{{ r.fecha }}</td>
+                <td>{{ r.area }}</td>
+                <td>{{ r.usuario.nombre if r.usuario else '—' }}</td>
+                <td>{{ r.created_at.strftime('%d/%m/%Y %H:%M') if r.created_at else '' }}</td>
+                <td>
+                  {% if r.pdf_path %}
+                    <a class="btn btn-secondary" href="{{ url_for('web.admin_descargar', reunion_id=r.id) }}">Descargar</a>
+                  {% else %}
+                    <span class="badge">Sin PDF</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="badge" style="display:block; padding:14px;">No hay reuniones que coincidan con el filtro.</div>
+    {% endif %}
+
+
+  </div>
+</div>
+{% endblock %}

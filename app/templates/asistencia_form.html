@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registro de asistencia — SOMA Web</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  <main class="container" style="max-width:480px; padding-top:24px;">
+    <div class="card">
+      <div class="card__body">
+        <h2 class="card__title" style="margin-bottom:4px;">{{ meeting.title or "Reunión SOMA" }}</h2>
+        <p class="card__subtitle">Fecha: {{ meeting.fecha or "—" }}</p>
+
+        {% if error %}
+          <div class="badge" style="background:#fff5f5; border-color:#b00020; color:#b00020; display:block; margin:10px 0;">
+            {{ error }}
+          </div>
+        {% endif %}
+
+        {% if meeting.commitments %}
+          <div class="section-bar">Compromisos acordados</div>
+          {% for c in meeting.commitments %}
+            <div class="qblock" style="margin-bottom:8px;">
+              <div class="qtitle" style="font-size:13px; margin-bottom:4px;">{{ loop.index }}. {{ c.accion }}</div>
+              <div style="font-size:12px; color:var(--muted);">
+                Responsable: {{ c.responsable }} · Fecha: {{ c.fecha }} · Estado: {{ c.estado }}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="badge" style="display:block; margin:10px 0;">
+            Aún no se han cargado compromisos para esta reunión.
+          </div>
+        {% endif %}
+
+        <div class="hr"></div>
+
+        <form class="form" method="post" action="{{ url_for('web.asistencia_submit', meeting_id=meeting_id) }}">
+          <div class="field">
+            <label>Nombre</label>
+            <input type="text" name="nombre" required autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label>Correo</label>
+            <input type="email" name="email" placeholder="correo@codelco.cl" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label>Área</label>
+            {% if meeting.participant_areas %}
+              <select name="area" id="areaSelect" onchange="toggleAreaOtra()">
+                <option value="">Selecciona tu área</option>
+                {% for a in meeting.participant_areas %}
+                  {% if a|upper != "OTRO" %}
+                    <option value="{{ a }}">{{ a }}</option>
+                  {% endif %}
+                {% endfor %}
+                <option value="OTRA">Otra</option>
+              </select>
+            {% else %}
+              <input type="text" name="area" autocomplete="off">
+            {% endif %}
+          </div>
+
+          <div class="field" id="areaOtraWrap" style="display:none;">
+            <label>Especifica tu área</label>
+            <input type="text" id="areaOtraInput" name="area_otra" placeholder="Escribe tu área" autocomplete="off">
+          </div>
+
+          <div class="qblock">
+            <div class="qtitle">¿Estás de acuerdo con los compromisos acordados?</div>
+            <div class="optgrid">
+              <label class="optcard">
+                <input type="radio" name="conforme" value="si" required>
+                <span>Sí, estoy de acuerdo</span>
+              </label>
+              <label class="optcard">
+                <input type="radio" name="conforme" value="no" required>
+                <span>No estoy de acuerdo</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="actions" style="margin-top:12px;">
+            <button class="btn btn-primary" type="submit" style="width:100%;">Confirmar asistencia</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function toggleAreaOtra(){
+      const select = document.getElementById("areaSelect");
+      const wrap = document.getElementById("areaOtraWrap");
+      const input = document.getElementById("areaOtraInput");
+      if(select.value === "OTRA"){
+        wrap.style.display = "block";
+      } else {
+        wrap.style.display = "none";
+        input.value = "";
+      }
+    }
+
+    document.querySelector("form")?.addEventListener("submit", function(e){
+      const select = document.getElementById("areaSelect");
+      if(select && select.value === "OTRA"){
+        const otraInput = document.getElementById("areaOtraInput");
+        const texto = (otraInput.value || "").trim();
+        if(!texto){
+          e.preventDefault();
+          alert("Por favor especifica tu área.");
+          otraInput.focus();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
