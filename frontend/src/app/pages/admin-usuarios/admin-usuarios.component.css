@@ -1,0 +1,16 @@
+.card { background: #fff; border: 1px solid #e2e2e2; border-radius: 12px; padding: 24px; max-width: 980px; margin: 0 auto; }
+.card__title { margin: 0; }
+.card__subtitle { color: #666; font-size: 13px; margin: 4px 0 20px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+label { font-size: 13px; font-weight: 600; }
+input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; background: #eef4ff; color: #0057b8; font-size: 12px; }
+.badge--admin { background: #fff3e0; color: #b35c00; }
+.badge--inactive { background: #fff5f5; color: #b00020; }
+.btn { padding: 6px 10px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 12px; margin-right: 4px; }
+.btn-secondary { background: #eee; color: #333; }
+.btn-trash { background: none; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; padding: 4px 8px; }
+.alert-error { background: #fff5f5; border: 1px solid #b00020; color: #b00020; padding: 8px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; }

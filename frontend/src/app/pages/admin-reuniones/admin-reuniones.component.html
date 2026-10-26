@@ -1,0 +1,57 @@
+<div class="card">
+  <h2 class="card__title">Panel de administración</h2>
+  <p class="card__subtitle">Historial de todas las reuniones generadas.</p>
+
+  @if (errorMsg()) { <div class="alert-error">{{ errorMsg() }}</div> }
+
+  <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+    @for (t of tipos; track t.value) {
+      <button type="button" class="btn" [class.btn-primary]="tipoFiltro === t.value" [class.btn-secondary]="tipoFiltro !== t.value" (click)="setTipo(t.value)">
+        {{ t.label }}
+      </button>
+    }
+  </div>
+
+  <div class="field" style="max-width:320px; margin-bottom:16px;">
+    <label>Filtrar por usuario</label>
+    <select [(ngModel)]="usuarioFiltro" (ngModelChange)="load()">
+      <option value="">Todos los usuarios</option>
+      @for (u of usuarios(); track u.id) {
+        <option [value]="u.id">{{ u.nombre }} ({{ u.email }})</option>
+      }
+    </select>
+  </div>
+
+  @if (loading()) {
+    <p>Cargando...</p>
+  } @else if (reuniones().length === 0) {
+    <div class="badge" style="display:block; padding:14px;">No hay reuniones que coincidan con el filtro.</div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Tipo</th><th>Título</th><th>Fecha reunión</th><th>Área</th><th>Generado por</th><th>Generado</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (r of reuniones(); track r.id) {
+            <tr>
+              <td>{{ r.docTypeLabel }}</td>
+              <td>{{ r.titulo }}</td>
+              <td>{{ r.fecha }}</td>
+              <td>{{ r.area || '—' }}</td>
+              <td>{{ r.usuarioNombre || '—' }}</td>
+              <td>{{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                @if (r.hasPdf) {
+                  <a class="btn btn-secondary" [href]="downloadUrl(r.id)" target="_blank">Descargar</a>
+                } @else {
+                  <span class="badge">Sin PDF</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

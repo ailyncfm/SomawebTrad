@@ -1,0 +1,57 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 1580 >>
+stream
+BT /F2 15 Tf 40 791.89 Td (Confirmación de rol - Reunión de Priorización SOMA) Tj ET
+BT /F1 9 Tf 40 771.89 Td (Fecha: 2026-10-26 Hora: 09:00) Tj ET
+BT /F1 9 Tf 40 758.89 Td (Gerencia: Gerencia Test Superintendencia: Superintendencia Test Área: Área Test) Tj ET
+BT /F2 12 Tf 40 739.89 Td (Observador 1) Tj ET
+BT /F1 9 Tf 40 723.89 Td (Juan Pérez - Gerencia Test / Superintendencia Test - juan@test.cl) Tj ET
+BT /F2 12 Tf 40 710.89 Td (Sección 1 - Planificación) Tj ET
+BT /F2 9 Tf 40 694.89 Td (1. ¿Se definieron los objetivos?) Tj ET
+BT /F1 9 Tf 40 681.89 Td (-> Selección: 3. Sí) Tj ET
+BT /F2 9 Tf 40 668.89 Td (2. ¿Se identificaron los riesgos?) Tj ET
+BT /F1 9 Tf 40 655.89 Td (-> Selección: 2. Parcial) Tj ET
+BT /F2 12 Tf 40 638.89 Td (Checklist de seguridad) Tj ET
+BT /F1 9 Tf 40 622.89 Td (1. [SI] ¿Se usó EPP adecuado?) Tj ET
+BT /F1 9 Tf 40 609.89 Td (Comentario: Todo correcto) Tj ET
+BT /F2 12 Tf 40 592.89 Td (Feedback) Tj ET
+BT /F1 9 Tf 40 576.89 Td (Fortalezas: Buena coordinación del equipo) Tj ET
+BT /F1 9 Tf 40 563.89 Td (Oportunidades: Mejorar tiempos de respuesta) Tj ET
+BT /F1 9 Tf 40 550.89 Td (Plan: Capacitación adicional en marzo) Tj ET
+BT /F2 9 Tf 40 533.89 Td (Puntaje total: 5 Nota: 6,0 Calidad de la reunión: Buena calidad) Tj ET
+BT /F2 12 Tf 40 514.89 Td (Compromisos) Tj ET
+BT /F1 9 Tf 40 498.89 Td ([Área Test] Revisar procedimiento - Responsable: Juan Pérez - Fecha: 2026-11-01 - Estado: Pendiente) Tj ET
+BT /F2 12 Tf 40 485.89 Td (Participantes) Tj ET
+BT /F1 9 Tf 40 469.89 Td ([Área Test] Juan Pérez - juan@test.cl - Asistió: Sí - Conforme: Sí) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000212 00000 n 
+0000000314 00000 n 
+0000000456 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+2087
+%%EOF

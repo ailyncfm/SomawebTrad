@@ -1,0 +1,40 @@
+.auth-card {
+  max-width: 420px;
+  margin: 48px auto;
+  padding: 32px;
+  border: 1px solid #e2e2e2;
+  border-radius: 12px;
+  background: #fff;
+}
+h2 { text-align: center; margin: 0 0 4px; }
+.subtitle { text-align: center; color: #666; margin: 0 0 20px; font-size: 14px; }
+.field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
+label { font-size: 13px; font-weight: 600; color: #333; }
+input {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.btn-primary {
+  width: 100%;
+  padding: 11px;
+  background: #0057b8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+}
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.alert-error {
+  background: #fff5f5;
+  border: 1px solid #b00020;
+  color: #b00020;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.footer-link { text-align: center; font-size: 13px; color: #666; margin-top: 16px; }

@@ -1,0 +1,70 @@
+<div class="card">
+  <h2 class="card__title">Gerencias, superintendencias y áreas</h2>
+  <p class="card__subtitle">Estructura usada en los formularios y el seguimiento.</p>
+
+  @if (errorMsg()) { <div class="alert-error">{{ errorMsg() }}</div> }
+
+  <div class="card" style="margin-bottom:20px; padding:16px;">
+    <div class="section-bar">Agregar nueva gerencia</div>
+    <div class="grid-3">
+      <div class="field"><label>Código</label><input type="text" [(ngModel)]="nuevoGCodigo" placeholder="Ej: GMIN" /></div>
+      <div class="field"><label>Nombre</label><input type="text" [(ngModel)]="nuevoGNombre" placeholder="Ej: Gerencia de Minas" /></div>
+      <div class="field" style="display:flex; align-items:flex-end;">
+        <button class="btn btn-primary" type="button" (click)="crearGerencia()">Agregar gerencia</button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p>Cargando...</p>
+  } @else {
+    @for (g of gerencias(); track g.id) {
+      <div class="card" style="margin-bottom:16px; padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">{{ g.nombreCompleto }}</h3>
+          <button class="btn-trash" type="button" (click)="eliminarGerencia(g.id)" title="Eliminar gerencia">✕</button>
+        </div>
+
+        <div class="grid-3" style="margin:12px 0;">
+          <div class="field"><label>Código superintendencia</label><input type="text" [(ngModel)]="nuevoSCodigo[g.id]" placeholder="Ej: SMN" /></div>
+          <div class="field"><label>Nombre superintendencia</label><input type="text" [(ngModel)]="nuevoSNombre[g.id]" placeholder="Ej: Suptcia. Mina Norte" /></div>
+          <div class="field" style="display:flex; align-items:flex-end;">
+            <button class="btn btn-secondary" type="button" (click)="crearSuperintendencia(g.id)">+ Agregar superintendencia</button>
+          </div>
+        </div>
+
+        @for (s of g.superintendencias; track s.id) {
+          <div style="border-top:1px solid #eee; padding-top:10px; margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="font-size:14px;">{{ s.nombreCompleto }}</b>
+              <button class="btn-trash" type="button" (click)="eliminarSuperintendencia(s.id)" title="Eliminar superintendencia" style="transform:scale(0.8);">✕</button>
+            </div>
+
+            <div class="table-wrap" style="margin-top:8px;">
+              <table>
+                <thead><tr><th>Área</th><th>Código PDF</th><th></th></tr></thead>
+                <tbody>
+                  @for (a of s.areas; track a.id) {
+                    <tr>
+                      <td>{{ a.nombre }}</td>
+                      <td>{{ a.codigoPdf || '—' }}</td>
+                      <td><button class="btn-trash" type="button" (click)="eliminarArea(a.id)" style="transform:scale(0.75);">✕</button></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="grid-3" style="margin-top:8px;">
+              <div class="field"><label>Nombre área</label><input type="text" [(ngModel)]="nuevoANombre[s.id]" placeholder="Ej: U. Nueva Área" /></div>
+              <div class="field"><label>Código para PDF</label><input type="text" [(ngModel)]="nuevoACodigoPdf[s.id]" placeholder="Ej: NA" maxlength="6" /></div>
+              <div class="field" style="display:flex; align-items:flex-end;">
+                <button class="btn btn-secondary" type="button" (click)="crearArea(s.id)">+ Agregar área</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

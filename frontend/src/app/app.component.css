@@ -1,0 +1,22 @@
+:host { display: block; font-family: "Segoe UI", Roboto, Arial, sans-serif; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e2e2; }
+.topbar__inner {
+  max-width: 1100px; margin: 0 auto; padding: 12px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.brand { text-decoration: none; color: #0057b8; font-weight: 700; font-size: 18px; }
+.nav { display: flex; gap: 18px; align-items: center; }
+.nav a { text-decoration: none; color: #333; font-size: 14px; }
+.nav a.active { color: #0057b8; font-weight: 600; }
+.user-menu { position: relative; }
+.user-menu__trigger { background: none; border: none; cursor: pointer; font-size: 14px; }
+.user-menu__dropdown {
+  position: absolute; right: 0; top: 28px; background: #fff;
+  border: 1px solid #e2e2e2; border-radius: 8px; min-width: 160px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; z-index: 10;
+}
+.user-menu__dropdown a { padding: 10px 14px; color: #333; }
+.user-menu__dropdown a:hover { background: #f5f5f5; }
+.user-menu__divider { border-top: 1px solid #eee; margin: 4px 0; }
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; min-height: 60vh; }
+.footer { border-top: 1px solid #e2e2e2; padding: 16px 20px; text-align: center; color: #888; font-size: 13px; }

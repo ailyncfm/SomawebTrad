@@ -1,0 +1,38 @@
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" routerLink="/">
+      <div class="brand__name">SOMA Web</div>
+    </a>
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Inicio</a>
+      @if (auth.isLoggedIn()) {
+        <div class="user-menu">
+          <button type="button" class="user-menu__trigger" (click)="menuOpen.set(!menuOpen())">
+            👤 {{ auth.user()?.nombre }}
+          </button>
+          @if (menuOpen()) {
+            <div class="user-menu__dropdown">
+              <a routerLink="/historial">Mi historial</a>
+              @if (auth.isAdmin()) {
+                <a routerLink="/admin">Admin</a>
+              }
+              <div class="user-menu__divider"></div>
+              <a (click)="logout()">Cerrar sesión</a>
+            </div>
+          }
+        </div>
+      } @else {
+        <a routerLink="/login">Iniciar sesión</a>
+        <a routerLink="/registro">Crear cuenta</a>
+      }
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <router-outlet />
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">SOMA Web | División El Teniente</div>
+</footer>

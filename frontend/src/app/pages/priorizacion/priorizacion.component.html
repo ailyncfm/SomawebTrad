@@ -1,0 +1,233 @@
+@if (loading()) {
+  <p>Cargando formulario...</p>
+} @else {
+  <div class="card">
+    <h2 class="card__title">{{ schema?.title }}</h2>
+    <p class="card__subtitle">Completa la evaluación y genera el PDF.</p>
+
+    @if (errorMsg()) { <div class="alert-error">{{ errorMsg() }}</div> }
+    @if (okMsg()) { <div class="alert-ok">{{ okMsg() }}</div> }
+
+    <div class="section-bar">Datos</div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Fecha</label>
+        <input type="text" [(ngModel)]="fecha" placeholder="DD/MM/AAAA" />
+      </div>
+      <div class="field">
+        <label>Hora</label>
+        <input type="text" [(ngModel)]="hora" placeholder="HH:MM" />
+      </div>
+      <div class="field">
+        <label>Gerencia</label>
+        <select [(ngModel)]="gerencia" (ngModelChange)="onGerenciaChange()">
+          <option value="">Selecciona...</option>
+          @for (g of gerencias; track g) { <option [value]="g">{{ g }}</option> }
+        </select>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Superintendencia</label>
+        <select [(ngModel)]="superintendencia" (ngModelChange)="onSuperintendenciaChange()">
+          <option value="">Selecciona una gerencia primero</option>
+          @for (s of superintendencias; track s) { <option [value]="s">{{ s }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label>Área</label>
+        <select [(ngModel)]="area">
+          <option value="">Selecciona una superintendencia primero</option>
+          @for (a of areas; track a) { <option [value]="a">{{ a }}</option> }
+        </select>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="section-bar">Observador 1</div>
+    <div class="grid-3">
+      <div class="field"><label>Nombre</label><input type="text" [(ngModel)]="obs1.nombre" /></div>
+      <div class="field"><label>Gerencia</label><input type="text" [(ngModel)]="obs1.gerencia" /></div>
+      <div class="field"><label>Superintendencia</label><input type="text" [(ngModel)]="obs1.superintendencia" /></div>
+    </div>
+    <div class="grid-3">
+      <div class="field"><label>SAP</label><input type="text" [(ngModel)]="obs1.sap" /></div>
+      <div class="field"><label>E-mail</label><input type="text" [(ngModel)]="obs1.email" /></div>
+      <div class="field"><label>Cargo</label><input type="text" [(ngModel)]="obs1.posicion" /></div>
+    </div>
+
+    @if (showObs2()) {
+      <div class="hr"></div>
+      <div class="section-bar section-bar--with-action">
+        <span>Observador 2</span>
+        <button type="button" class="btn-trash" (click)="toggleObs2()">Quitar</button>
+      </div>
+      <div class="grid-3">
+        <div class="field"><label>Nombre</label><input type="text" [(ngModel)]="obs2.nombre" /></div>
+        <div class="field"><label>Gerencia</label><input type="text" [(ngModel)]="obs2.gerencia" /></div>
+        <div class="field"><label>Superintendencia</label><input type="text" [(ngModel)]="obs2.superintendencia" /></div>
+      </div>
+      <div class="grid-3">
+        <div class="field"><label>SAP</label><input type="text" [(ngModel)]="obs2.sap" /></div>
+        <div class="field"><label>E-mail</label><input type="text" [(ngModel)]="obs2.email" /></div>
+        <div class="field"><label>Cargo</label><input type="text" [(ngModel)]="obs2.posicion" /></div>
+      </div>
+    } @else {
+      <div style="margin-top:10px;">
+        <button type="button" class="btn btn-secondary" (click)="toggleObs2()">+ Agregar observador</button>
+      </div>
+    }
+
+    <div class="hr"></div>
+
+    @for (sec of sections; track sec.name) {
+      <div class="section-bar">{{ sec.name }}</div>
+      @for (it of sec.items; track it.question) {
+        <div class="qblock" [class.qblock--invalid]="attemptedSubmit() && it.selected === 0">
+          <div class="qtitle">{{ it.question }}</div>
+          <div class="optgrid">
+            @for (opt of it.options; track opt; let oi = $index) {
+              <label class="optcard" [class.is-selected]="it.selected === oi + 1" (click)="selectOption(it, oi)">
+                <span class="optbadge">{{ oi + 1 }}</span>
+                <span>{{ opt }}</span>
+              </label>
+            }
+          </div>
+          @if (attemptedSubmit() && it.selected === 0) {
+            <div class="qblock__error">Debes seleccionar una opción.</div>
+          }
+        </div>
+      }
+    }
+
+    <div class="hr"></div>
+
+    <div class="section-bar">Checklist de seguridad</div>
+    @if (attemptedSubmit() && hasChecklistInvalid()) {
+      <div class="qblock__error" style="margin-bottom:10px;">Hay requisitos sin responder. Marca SI o NO en cada fila roja.</div>
+    }
+    <div class="table-wrap">
+      <table class="checklist-table">
+        <thead>
+          <tr><th>N°</th><th>Requisito</th><th>SI</th><th>NO</th><th>Comentario</th></tr>
+        </thead>
+        <tbody>
+          @for (c of checklist; track c.question; let ci = $index) {
+            <tr [class.checklist-row--invalid]="checklistTouched() && !c.si && !c.no">
+              <td>{{ ci + 1 }}</td>
+              <td>{{ c.question }}</td>
+              <td class="checklist-radio"><input type="radio" [checked]="c.si" (click)="setChecklist(c, 'si')" /></td>
+              <td class="checklist-radio"><input type="radio" [checked]="c.no" (click)="setChecklist(c, 'no')" /></td>
+              <td><input type="text" [(ngModel)]="c.comentario" placeholder="Comentario (opcional)" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-bar">Feedback</div>
+    <div class="field"><label>Fortalezas</label><textarea [(ngModel)]="fortalezas" rows="2"></textarea></div>
+    <div class="field"><label>Oportunidades</label><textarea [(ngModel)]="oportunidades" rows="2"></textarea></div>
+    <div class="field"><label>Plan</label><textarea [(ngModel)]="plan" rows="2"></textarea></div>
+
+    <div class="hr"></div>
+
+    <div class="section-bar">Compromisos</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Área</th><th>Compromiso existente</th><th>Acción</th><th>Responsable</th>
+            <th>Fecha</th><th>Estado</th><th>Evidencia</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of commitments; track $index; let ri = $index) {
+            <tr>
+              <td>
+                <select [(ngModel)]="row.area" (ngModelChange)="onCommitmentAreaChange(row)">
+                  <option value="">Selecciona...</option>
+                  @for (a of schema?.participantAreas; track a) { <option [value]="a">{{ a }}</option> }
+                </select>
+              </td>
+              <td>
+                <select [(ngModel)]="row.threadId" (ngModelChange)="onExistingCompromisoChange(row)" [disabled]="!row.area">
+                  <option value="">+ Nuevo compromiso</option>
+                  @for (ab of row.abiertos; track ab.threadId) {
+                    <option [value]="ab.threadId">{{ ab.vencido ? '⚠ VENCIDO — ' : '' }}{{ ab.accion }} ({{ ab.responsable }})</option>
+                  }
+                </select>
+              </td>
+              <td><input type="text" [(ngModel)]="row.accion" /></td>
+              <td><input type="text" [(ngModel)]="row.responsable" /></td>
+              <td><input type="text" [(ngModel)]="row.fecha" placeholder="DD/MM/AAAA" /></td>
+              <td>
+                <select [(ngModel)]="row.estado">
+                  <option value="">Selecciona...</option>
+                  @for (e of estados; track e) { <option [value]="e">{{ e }}</option> }
+                </select>
+              </td>
+              <td><input type="text" [(ngModel)]="row.evidencia" /></td>
+              <td><button type="button" class="btn-trash" (click)="removeCommitmentRow(ri)">✕</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <button type="button" class="btn btn-secondary" (click)="addCommitmentRow()" style="margin-top:10px;">+ Agregar compromiso</button>
+
+    <div class="hr"></div>
+
+    <div class="section-bar" id="participantsSection">Participantes</div>
+    @if (attemptedSubmit() && !hasAnyParticipantFilled()) {
+      <div class="qblock__error" style="margin-bottom:10px;">Debes agregar al menos un participante (completa el campo "Responsable" de alguna fila).</div>
+    }
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Área</th><th>Responsable</th><th>E-mail</th><th>Asistió</th><th>Conforme</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (p of participants; track $index; let pi = $index) {
+            <tr>
+              <td>
+                @if (p.areaEditable) {
+                  <input type="text" [(ngModel)]="p.area" placeholder="Especifica el área" />
+                } @else {
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                    <span>{{ p.area }}</span>
+                    @if (!p.isExtra) {
+                      <button type="button" class="btn-add-inline" (click)="addParticipantRow(pi, p.area)">+</button>
+                    }
+                  </div>
+                }
+              </td>
+              <td><input type="text" [(ngModel)]="p.responsable" /></td>
+              <td><input type="email" [(ngModel)]="p.email" placeholder="correo@dominio.cl" /></td>
+              <td>
+                <label><input type="radio" [checked]="p.asistio==='si'" (click)="p.asistio='si'; onAsistioChange(p)" /> Sí</label>
+                <label><input type="radio" [checked]="p.asistio==='no'" (click)="p.asistio='no'; onAsistioChange(p)" /> No</label>
+              </td>
+              <td>
+                <label><input type="radio" [disabled]="p.asistio==='no'" [checked]="p.conforme==='si'" (click)="p.conforme='si'" /> Sí</label>
+                <label><input type="radio" [disabled]="p.asistio==='no'" [checked]="p.conforme==='no'" (click)="p.conforme='no'" /> No</label>
+              </td>
+              <td>
+                @if (p.isExtra) { <button type="button" class="btn-trash" (click)="removeParticipantRow(pi)">✕</button> }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="actions" style="margin-top:16px;">
+      <button class="btn btn-primary" type="button" (click)="submit()" [disabled]="submitting()">
+        {{ submitting() ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+  </div>
+}

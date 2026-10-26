@@ -1,0 +1,50 @@
+<div class="card">
+  <h2 class="card__title">Gestión de usuarios</h2>
+  <p class="card__subtitle">Activa, desactiva o cambia el rol de cada cuenta.</p>
+
+  @if (errorMsg()) { <div class="alert-error">{{ errorMsg() }}</div> }
+
+  <div class="field" style="max-width:360px; margin-bottom:16px;">
+    <label>Buscar usuario</label>
+    <input type="text" [(ngModel)]="q" placeholder="Nombre o correo" (keyup.enter)="load()" />
+  </div>
+  <button type="button" class="btn btn-secondary" (click)="load()" style="margin-bottom:16px;">Buscar</button>
+
+  @if (loading()) {
+    <p>Cargando...</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Creado</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (u of usuarios(); track u.id) {
+            <tr>
+              <td>{{ u.nombre }}</td>
+              <td>{{ u.email }}</td>
+              <td><span class="badge" [class.badge--admin]="u.rol === 'admin'">{{ u.rol === 'admin' ? 'Administrador' : 'Usuario' }}</span></td>
+              <td><span class="badge" [class.badge--inactive]="!u.isActiveAccount">{{ u.isActiveAccount ? 'Activa' : 'Deshabilitada' }}</span></td>
+              <td>{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td>
+                @if (isSelf(u)) {
+                  <span style="font-size:12px; color:#888;">Tu cuenta</span>
+                } @else {
+                  <button class="btn btn-secondary" type="button" (click)="toggleActive(u)">
+                    {{ u.isActiveAccount ? 'Deshabilitar' : 'Habilitar' }}
+                  </button>
+                  <button class="btn btn-secondary" type="button" (click)="toggleRole(u)">
+                    {{ u.rol === 'admin' ? 'Quitar admin' : 'Hacer admin' }}
+                  </button>
+                  @if (!u.hasReuniones) {
+                    <button class="btn-trash" type="button" (click)="eliminar(u)" title="Eliminar cuenta">✕</button>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
